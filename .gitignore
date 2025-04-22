@@ -9,3 +9,4 @@ node_modules/
 /static/
 /media/
 db.sqlite3
+/staticfiles/
