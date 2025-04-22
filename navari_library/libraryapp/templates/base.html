@@ -1,0 +1,73 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      {% block title %}Navari Library Management System{% endblock %}
+    </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="flex h-screen bg-gray-100">
+    <!-- Sidebar -->
+    <div
+      id="sidebar"
+      class="w-64 bg-white shadow-lg transition-all duration-300 ease-in-out"
+    >
+      <div class="p-4 font-bold text-xl border-b">MAIN MENU</div>
+      <nav class="p-4 space-y-2">
+        <a
+          href="{% url 'dashboard' %}"
+          class="block px-2 py-1 {% if request.resolver_match.url_name == 'dashboard' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
+          >Dashboard</a
+        >
+        <a
+          href="{% url 'books' %}"
+          class="block px-2 py-1 {% if request.resolver_match.url_name == 'books' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
+          >Books</a
+        >
+        <a
+          href="{% url 'members' %}"
+          class="block px-2 py-1 {% if request.resolver_match.url_name == 'members' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
+          >Members</a
+        >
+        <a
+          href="{% url 'transactions' %}"
+          class="block px-2 py-1 {% if request.resolver_match.url_name == 'transactions' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
+          >Transactions</a
+        >
+        <a href="#" class="block px-2 py-1 hover:bg-gray-200 rounded"
+          >Reports</a
+        >
+        <a href="#" class="block px-2 py-1 hover:bg-gray-200 rounded"
+          >Settings</a
+        >
+      </nav>
+    </div>
+
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col">
+      <!-- Navbar -->
+      <header class="bg-blue-800 text-white p-4 flex items-center">
+        <button id="toggleSidebar" class="text-white mr-4 focus:outline-none">
+          ☰
+        </button>
+        <h1 class="text-xl font-semibold ml-5 text-left">
+          Navari Library Management System
+        </h1>
+      </header>
+
+      <!-- Content -->
+      <main class="p-6 flex-1 overflow-y-auto">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{% static 'js/jquery.js' %}"></script>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    <script src="{% static 'js/book.js' %}"></script>
+    {% block extra_scripts %}{% endblock %}
+  </body>
+</html>

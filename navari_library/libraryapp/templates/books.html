@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Books - Library Management System{% endblock %}
+
+{% block content %}
+    <div class="bg-white p-6 rounded shadow">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold">Books Management</h2>
+            <div class="flex gap-2">
+                <input type="text" placeholder="Search by title or author..." class="border rounded px-3 py-1 w-64" />
+                <a href="{% url 'book_add' %}">
+                    <button class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">+ Add Book</button>
+                </a>                  
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2 mb-4">
+            <span class="font-semibold">Filter by:</span>
+            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">All Books</button>
+            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Available</button>
+            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Out of Stock</button>
+        </div>
+
+        <table class="w-full table-auto border rounded">
+            <thead class="bg-gray-100 text-left">
+                <tr>
+                    <th class="p-2">Title</th>
+                    <th class="p-2">Author</th>
+                    <th class="p-2">Year</th>
+                    <th class="p-2">Available/Stock</th>
+                    <th class="p-2">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200" id="book-list">
+                
+                
+                
+            </tbody>
+        </table>
+
+        <div class="mt-4 flex justify-between items-center text-sm text-gray-600">
+            <div class="space-x-1">
+                <button class="px-2 py-1 border rounded">1</button>
+                <button class="px-2 py-1 border rounded">2</button>
+                <button class="px-2 py-1 border rounded">3</button>
+            </div>
+            <span>Showing 1-4 of 54 books</span>
+        </div>
+    </div>
+    <script>
+        var BOOKS_URL = "{% url 'books' %}";
+    </script>
+{% endblock %}

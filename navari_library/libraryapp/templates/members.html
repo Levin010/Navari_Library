@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="p-6 bg-gray-50 min-h-screen">
+  <div class="bg-white rounded-lg shadow p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <h2 class="text-xl font-semibold text-gray-800">Members Management</h2>
+    <div class="flex flex-col md:flex-row items-center gap-3">
+      <div class="flex gap-2">
+        <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm">All Members</button>
+        <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm">Active</button>
+        <button class="px-3 py-1 border border-gray-300 rounded hover:bg-gray-100 text-sm">With Debt</button>
+      </div>
+      <div class="flex gap-2">
+        <input type="text" placeholder="Search by name or email..." class="border border-gray-300 rounded px-3 py-1 w-64 text-sm focus:outline-none focus:ring focus:border-blue-400">
+        <button class="bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700">+ ADD MEMBER</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-lg shadow overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-100 text-left text-gray-700">
+        <tr>
+          <th class="px-4 py-3">Name</th>
+          <th class="px-4 py-3">Email</th>
+          <th class="px-4 py-3">Member ID</th>
+          <th class="px-4 py-3">Debt (KES)</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="text-gray-800">
+        <tr class="border-t">
+          <td class="px-4 py-3">John Smith</td>
+          <td class="px-4 py-3">john.smith@email.com</td>
+          <td class="px-4 py-3">MEM-001</td>
+          <td class="px-4 py-3">0.00</td>
+          <td class="px-4 py-3">
+            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">Active</span>
+          </td>
+          <td class="px-4 py-3">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded">VIEW</button>
+          </td>
+        </tr>
+        <tr class="border-t">
+          <td class="px-4 py-3">Sarah Johnson</td>
+          <td class="px-4 py-3">sarah.j@email.com</td>
+          <td class="px-4 py-3">MEM-002</td>
+          <td class="px-4 py-3">120.00</td>
+          <td class="px-4 py-3">
+            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">Active</span>
+          </td>
+          <td class="px-4 py-3">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded">VIEW</button>
+          </td>
+        </tr>
+        <tr class="border-t">
+          <td class="px-4 py-3">David Wilson</td>
+          <td class="px-4 py-3">d.wilson@email.com</td>
+          <td class="px-4 py-3">MEM-003</td>
+          <td class="px-4 py-3 text-red-600 font-semibold">550.00</td>
+          <td class="px-4 py-3">
+            <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs">Limited</span>
+          </td>
+          <td class="px-4 py-3">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded">VIEW</button>
+          </td>
+        </tr>
+        <tr class="border-t">
+          <td class="px-4 py-3">Michael Brown</td>
+          <td class="px-4 py-3">m.brown@email.com</td>
+          <td class="px-4 py-3">MEM-004</td>
+          <td class="px-4 py-3">200.00</td>
+          <td class="px-4 py-3">
+            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs">Active</span>
+          </td>
+          <td class="px-4 py-3">
+            <button class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1 rounded">VIEW</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between border-t px-4 py-3 text-sm text-gray-600">
+      <span>Showing 1-4 of 31 members</span>
+      <div class="flex items-center space-x-1">
+        <button class="w-8 h-8 rounded-full bg-blue-600 text-white text-sm">1</button>
+        <button class="w-8 h-8 rounded-full hover:bg-gray-200">2</button>
+        <button class="w-8 h-8 rounded-full hover:bg-gray-200">3</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

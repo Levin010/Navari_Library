@@ -1,0 +1,19 @@
+{
+  "name": "navari_library",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "tailwind": "tailwindcss -i ./navari_library/libraryapp/static/css/input.css -o ./navari_library/libraryapp/static/css/styles.css --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "tailwindcss-animate": "^1.0.7"
+  }
+}

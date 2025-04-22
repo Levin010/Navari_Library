@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="flex min-h-screen">
+  
+
+  <!-- Main Content -->
+  <div class="flex-1 p-6 space-y-6">
+    
+    <!-- Top Right Action -->
+    <div class="flex justify-end">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded">
+        Issue Book
+      </button>
+    </div>
+
+    <!-- Summary Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total Books -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="bg-blue-600 text-white font-bold text-sm px-4 py-2 rounded-t-lg">TOTAL BOOKS</div>
+      <div class="p-4 text-2xl font-bold text-gray-800">1,254</div>
+    </div>
+  
+    <!-- Borrowed -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="bg-green-600 text-white font-bold text-sm px-4 py-2 rounded-t-lg">BOOKS BORROWED</div>
+      <div class="p-4 text-2xl font-bold text-gray-800">143</div>
+    </div>
+  
+    <!-- Overdue -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="bg-yellow-400 text-white font-bold text-sm px-4 py-2 rounded-t-lg">BOOKS OVERDUE</div>
+      <div class="p-4 text-2xl font-bold text-gray-800">27</div>
+    </div>
+  
+    <!-- Debt -->
+    <div class="bg-white rounded-lg shadow">
+      <div class="bg-red-600 text-white font-bold text-sm px-4 py-2 rounded-t-lg"> TOTAL DEBT (KES)</div>
+      <div class="p-4 text-2xl font-bold text-gray-800">14,230</div>
+    </div>
+  </div>
+  
+
+    <!-- Monthly Transactions and Recent Activities -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <!-- Monthly Transactions Chart -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-lg font-semibold mb-2">Monthly Transactions</div>
+        <div class="flex items-end justify-between h-40 mt-4">
+          <div class="w-8 bg-blue-500 h-24 rounded"></div>
+          <div class="w-8 bg-blue-500 h-32 rounded"></div>
+          <div class="w-8 bg-blue-500 h-20 rounded"></div>
+          <div class="w-8 bg-blue-500 h-40 rounded"></div>
+          <div class="w-8 bg-blue-500 h-28 rounded"></div>
+          <div class="w-8 bg-blue-500 h-36 rounded"></div>
+        </div>
+        <div class="flex justify-between mt-2 text-sm text-gray-600">
+          <span>Apr</span>
+          <span>May</span>
+          <span>Jun</span>
+          <span>Jul</span>
+          <span>Aug</span>
+          <span>Sep</span>
+        </div>
+      </div>
+
+      <!-- Recent Activities -->
+      <div class="bg-white rounded-lg shadow p-4">
+        <div class="text-lg font-semibold mb-4">Recent Activities</div>
+        <div class="space-y-4 text-sm text-gray-700 overflow-y-auto max-h-52 pr-2">
+          <div>
+            <div class="font-semibold text-gray-600">Today, 10:30 AM</div>
+            <div>Book returned: "Python Programming"</div>
+          </div>
+          <div>
+            <div class="font-semibold text-gray-600">Today, 09:15 AM</div>
+            <div>Book issued: "Web Design Basics"</div>
+          </div>
+          <div>
+            <div class="font-semibold text-gray-600">Yesterday, 4:45 PM</div>
+            <div>New member added: "John Smith"</div>
+          </div>
+          <!-- Add more entries here if needed -->
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
