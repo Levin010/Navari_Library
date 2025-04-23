@@ -11,7 +11,9 @@
       </div>
       <div class="flex gap-2">
         <input type="text" placeholder="Search by name or email..." class="border border-gray-300 rounded px-3 py-1 w-64 text-sm focus:outline-none focus:ring focus:border-blue-400">
-        <button class="bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700">+ ADD MEMBER</button>
+        <a href="{% url 'member_add' %}">
+          <button class="bg-blue-600 text-white px-4 py-1.5 text-sm rounded hover:bg-blue-700">+ ADD MEMBER</button>
+        </a>
       </div>
     </div>
   </div>

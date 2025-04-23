@@ -72,25 +72,11 @@
         </div>
 
         <div class="mb-4">
-          <label for="joined_date" class="block text-gray-700 text-sm font-bold mb-2">Joined Date</label>
+          <label for="postal_address" class="block text-gray-700 text-sm font-bold mb-2">Postal Address</label>
           <input
-            type="date"
-            id="joined_date"
-            name="joined_date"
-            value="{{ today|date:'Y-m-d' }}"
-            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          />
-        </div>
-
-        <div class="mb-4">
-          <label for="outstanding_debt" class="block text-gray-700 text-sm font-bold mb-2">Outstanding Debt (Ksh)</label>
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            id="outstanding_debt"
-            name="outstanding_debt"
-            value="0.00"
+            type="text"
+            id="postal_address"
+            name="postal_address"
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
         </div>
@@ -105,16 +91,6 @@
             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           />
         </div>
-      </div>
-
-      <div class="mb-4">
-        <label for="postal_address" class="block text-gray-700 text-sm font-bold mb-2">Postal Address</label>
-        <textarea
-          id="postal_address"
-          name="postal_address"
-          rows="4"
-          class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-        ></textarea>
       </div>
 
       <div class="flex items-center justify-end">

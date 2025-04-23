@@ -36,7 +36,7 @@ class Member(models.Model):
     date_of_birth = models.DateField(blank=True, null=True)
     postal_address = models.TextField(blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
-    joined_date = models.DateField(default=datetime.date.today)
+    joined_date = models.DateField(auto_now_add=True)
     outstanding_debt = models.DecimalField(
         max_digits=10,
         decimal_places=2,

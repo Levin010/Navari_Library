@@ -34,11 +34,11 @@ $(document).ready(function () {
           let row = `
         <tr class="border-t">
             <td class="px-4 py-3">${member.first_name} ${member.last_name}</td>
-            <td class="px-6 py-4 whitespace-nowrap">${member.email}</td>
-            <td class="px-6 py-4 whitespace-nowrap">${member.joined_date}</td>
+            <td class="px-4 py-3">${member.email}</td>
+            <td class="px-4 py-3">${member.joined_date}</td>
             <td class="${debtClass}">Ksh ${debt.toFixed(2)}</td>
             <td class="px-4 py-3">${statusTag}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-3">
                 <a href="/members/view/${
                   member.id
                 }" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View ${
@@ -131,8 +131,7 @@ $(document).ready(function () {
         $("#input_phone_number").val(data.phone_number);
         $("#input_date_of_birth").val(data.date_of_birth);
         $("#input_postal_address").val(data.postal_address);
-        $("#input_joined_date").val(data.joined_date);
-        $("#input_outstanding_debt").val(data.outstanding_debt);
+        
 
         $("#editMemberModal").removeClass("hidden");
       },
@@ -159,13 +158,13 @@ $(document).ready(function () {
       processData: false,
       contentType: false,
       success: function (data) {
-        $("#memberName").text(`${data.first_name} ${data.last_name}`);
+        $("#memberFirstName").text(`${data.first_name}`);
+        $("#memberLastName").text(`${data.last_name}`);
         $("#memberEmail").text(data.email);
         $("#memberPhone").text(data.phone_number || "N/A");
         $("#memberDOB").text(data.date_of_birth || "N/A");
         $("#memberAddress").text(data.postal_address || "N/A");
-        $("#memberJoinDate").text(data.joined_date);
-        $("#memberDebt").text(`Ksh ${data.outstanding_debt}`);
+
 
         if (
           formData.get("profile_pic") &&

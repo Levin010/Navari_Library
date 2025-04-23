@@ -24,6 +24,7 @@ from django.conf.urls.static import static
 
 router = DefaultRouter()
 router.register(r'books', views.BookViewSet)
+router.register(r'members', views.MemberViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -39,6 +40,10 @@ urlpatterns = [
     path('api/books/<int:book_id>/update/', views.update_book, name='update_book'),
     
     path('members/', views.members_view, name='members'),
+    path('members/add/', views.add_member_view, name='member_add'),
+    path('members/view/<int:member_id>/', views.member_detail_view, name='member_detail'),
+    path('api/members/<int:member_id>/', views.member_detail_api, name='member_detail_api'),
+    path('api/members/<int:member_id>/update/', views.update_member, name='update_member'),
     
     path('transactions/', views.transactions_view, name='transactions'),
 ]
