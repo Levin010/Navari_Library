@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Books - Library Management System{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold">Book Details</h2>
+        <div>
+            <a href="/books/" class="px-4 py-2 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300">Back to Books</a>
+            <button id="editBookBtn" class="px-4 py-2 bg-blue-500 rounded-md text-white hover:bg-blue-600 ml-2">Edit Book</button>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex">
+            <!-- Book cover image -->
+            <div class="w-1/4 pr-6">
+                <div class="bg-gray-200 h-64 w-full rounded-md flex items-center justify-center">
+                    <img src="{% if book.cover_pic %}{{ book.cover_pic.url }}{% else %}/static/images/default_cover.png{% endif %}" alt="Cover Image" />
+
+                </div>
+            </div>
+
+            <!-- Book details -->
+            <div class="w-3/4">
+                <h1 id="bookTitle" class="text-2xl font-bold mb-2">{{ book.title }}</h1>
+                <p class="text-lg mb-1">by <span id="bookAuthor">{{ book.author }}</span></p>
+                
+                <div class="grid grid-cols-2 gap-4 mt-6">
+                    <div>
+                        <p class="text-sm text-gray-600">Publication Year</p>
+                        <p id="bookYear" class="font-medium">{{ book.publication_year }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Publisher</p>
+                        <p id="bookPublisher" class="font-medium">{{ book.publisher|default:"N/A" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Genre</p>
+                        <p id="bookGenre" class="font-medium">{{ book.genre|default:"N/A" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Stock</p>
+                        <p id="bookStock" class="font-medium">{{ book.stock }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Available</p>
+                        <p id="bookAvailable" class="font-medium">{{ book.available }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-600">Added On</p>
+                        <p id="bookAdded" class="font-medium">{{ book.created_at|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <p class="text-sm text-gray-600">Description</p>
+                    <p id="bookDescription" class="mt-1">{{ book.description|default:"No description available." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editBookModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 hidden flex items-center justify-center">
+    <div class="bg-white rounded-lg shadow-xl w-2/3 max-h-screen overflow-y-auto">
+        <div class="flex justify-between items-center border-b p-4">
+            <h3 class="text-lg font-bold">Edit Book</h3>
+            <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form id="editBookForm" class="p-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input type="text" id="input_title" name="title" class="w-full p-2 border rounded-md">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                    <input type="text" id="input_author" name="author" class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Publication Year</label>
+                    <input type="number" id="input_publication_year" name="publication_year" class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Publisher</label>
+                    <input type="text" id="input_publisher" name="publisher" class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Genre</label>
+                    <input type="text" id="input_genre" name="genre" class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Cover Image</label>
+                    <input type="file" id="input_cover_pic" name="cover_pic" class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Stock</label>
+                    <input type="number" id="input_stock" name="stock" class="w-full p-2 border rounded-md">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Available</label>
+                    <input type="number" id="input_available" name="available" class="w-full p-2 border rounded-md">
+                </div>
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <textarea id="input_description" name="description" rows="4" class="w-full p-2 border rounded-md"></textarea>
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="cancelEdit" class="px-4 py-2 bg-gray-200 rounded-md text-gray-700 hover:bg-gray-300">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-500 rounded-md text-white hover:bg-blue-600">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

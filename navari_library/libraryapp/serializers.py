@@ -11,3 +11,16 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model = Book
         fields = '__all__'
+        
+    def update(self, instance, validated_data):
+        # Handle file upload separately
+        cover_pic = validated_data.pop('cover_pic', None)
+        if cover_pic:
+            instance.cover_pic = cover_pic
+            
+        # Update all other fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+            
+        instance.save()
+        return instance

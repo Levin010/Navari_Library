@@ -29,10 +29,17 @@ urlpatterns = [
     path('api/', include(router.urls)),
     path("admin/", admin.site.urls),
     path('', views.home_view, name='home'),
+    
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+    
     path('books/', views.books_view, name='books'),
     path('books/add/', views.add_book_view, name='book_add'),
-    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('books/view/<int:book_id>/', views.book_detail_view, name='book_detail'),
+    path('api/books/<int:book_id>/', views.book_detail_api, name='book_detail_api'),
+    path('api/books/<int:book_id>/update/', views.update_book, name='update_book'),
+    
     path('members/', views.members_view, name='members'),
+    
     path('transactions/', views.transactions_view, name='transactions'),
 ]
 

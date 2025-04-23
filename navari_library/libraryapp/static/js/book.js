@@ -43,7 +43,7 @@ $(document).ready(function() {
                             <td class="px-6 py-4 whitespace-nowrap">${book.publication_year}</td>
                             <td class="px-6 py-4 whitespace-nowrap">${book.available}/${book.stock}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <a href="/books/edit/${book.id}" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                                <a href="/books/view/${book.id}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View ${book.title}">View</a>
                                 <button class="text-red-600 hover:text-red-900 delete-book" data-id="${book.id}">Delete</button>
                             </td>
                         </tr>
@@ -97,7 +97,7 @@ $(document).ready(function() {
             contentType: false,  
             success: function(response) {
                 alert('Book added successfully!');
-                window.location.href = BOOKS_URL;
+                window.location.href = "/books/";
             },
             error: function(xhr) {
                 console.error('Error adding book:', xhr);
@@ -125,4 +125,101 @@ $(document).ready(function() {
             $('#available').val(stock);
         }
     });
+
+    const currentBookId = window.location.pathname.split('/').filter(Boolean).pop();
+    
+    // Show edit modal
+    $('#editBookBtn').on('click', function() {
+        // Get the current book data
+        $.ajax({
+            url: `/api/books/${currentBookId}/`,
+            method: 'GET',
+            success: function(data) {
+                // Populate the form with current book data
+                $('#input_title').val(data.title);
+                $('#input_author').val(data.author);
+                $('#input_publication_year').val(data.publication_year);
+                $('#input_publisher').val(data.publisher);
+                $('#input_genre').val(data.genre);
+                $('#input_stock').val(data.stock);
+                $('#input_available').val(data.available);
+                $('#input_description').val(data.description);
+                
+                // Show the modal
+                $('#editBookModal').removeClass('hidden');
+            },
+            error: function(error) {
+                console.error('Error fetching book details:', error);
+                alert('Failed to load book details. Please try again.');
+            }
+        });
+    });
+    
+    // Hide modal (both close button and cancel button)
+    $('#closeModal, #cancelEdit').on('click', function() {
+        $('#editBookModal').addClass('hidden');
+    });
+    
+    // Submit form to update book
+    $('#editBookForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        // Create FormData object for file upload
+        const formData = new FormData(this);
+        
+        $.ajax({
+            url: `/api/books/${currentBookId}/update/`,
+            method: 'PUT',
+            data: formData,
+            processData: false,  // Don't process the data
+            contentType: false,  // Don't set content type
+            success: function(data) {
+                // Update the UI with new data
+                $('#bookTitle').text(data.title);
+                $('#bookAuthor').text(data.author);
+                $('#bookYear').text(data.publication_year || 'N/A');
+                $('#bookPublisher').text(data.publisher || 'N/A');
+                $('#bookGenre').text(data.genre || 'N/A');
+                $('#bookStock').text(data.stock);
+                $('#bookAvailable').text(data.available);
+                $('#bookDescription').text(data.description || 'No description available.');
+                
+                // If there's an image update, refresh the page to show the new image
+                if (formData.get('cover_pic') && formData.get('cover_pic').size > 0) {
+                    window.location.reload();
+                } else {
+                    // Hide the modal
+                    $('#editBookModal').addClass('hidden');
+                }
+                
+                // Show success message
+                showNotification('Book updated successfully', 'success');
+            },
+            error: function(error) {
+                console.error('Error updating book:', error);
+                showNotification('Failed to update book. Please check the form and try again.', 'error');
+            }
+        });
+    });
+    
+    // Helper function to show notifications
+    function showNotification(message, type) {
+        const notificationClass = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+        
+        const notification = $(`
+            <div class="fixed top-4 right-4 px-4 py-2 rounded-md text-white ${notificationClass} shadow-lg transition-opacity duration-300">
+                ${message}
+            </div>
+        `);
+        
+        $('body').append(notification);
+        
+        // Remove notification after 3 seconds
+        setTimeout(function() {
+            notification.css('opacity', '0');
+            setTimeout(function() {
+                notification.remove();
+            }, 300);
+        }, 3000);
+    }
 });
