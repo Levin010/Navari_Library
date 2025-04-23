@@ -37,12 +37,12 @@ $(document).ready(function() {
                         : '<div class="h-12 w-10 bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>';
                     
                     let row = `
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">${book.title}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${book.author}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${book.publication_year}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">${book.available}/${book.stock}</td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="border-t">
+                            <td class="px-4 py-3">${book.title}</td>
+                            <td class="px-4 py-3">${book.author}</td>
+                            <td class="px-4 py-3">${book.publication_year}</td>
+                            <td class="px-4 py-3">${book.available}/${book.stock}</td>
+                            <td class="px-4 py-3">
                                 <a href="/books/view/${book.id}" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View ${book.title}">View</a>
                                 <button class="text-red-600 hover:text-red-900 delete-book" data-id="${book.id}">Delete</button>
                             </td>
