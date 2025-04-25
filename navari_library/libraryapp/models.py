@@ -50,3 +50,47 @@ class Member(models.Model):
     class Meta:
         db_table = 'member'
         ordering = ['first_name', 'last_name']
+        
+        
+class Transaction(models.Model):
+    TRANSACTION_TYPES = (
+        ('ISSUE', 'Issue'),
+        ('RETURN', 'Return'),
+    )
+    
+    STATUS_CHOICES = (
+        ('PENDING', 'Pending'),
+        ('COMPLETED', 'Completed'),
+        ('OVERDUE', 'Overdue'),
+    )
+    
+    transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
+    book = models.ForeignKey('Book', on_delete=models.CASCADE, related_name='transactions')
+    member = models.ForeignKey('Member', on_delete=models.CASCADE, related_name='transactions')
+    issue_date = models.DateTimeField(default=timezone.now)
+    due_date = models.DateTimeField(null=True, blank=True)
+    return_date = models.DateTimeField(null=True, blank=True)
+    fee = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='PENDING')
+    
+    def __str__(self):
+        member_name = f"{self.member.first_name} {self.member.last_name}".strip() if self.member else ""
+        return f"{self.transaction_type} - {self.book.title} - {self.member_name}"
+    
+    class Meta:
+        db_table = 'transaction'
+        ordering = ['-issue_date']
+        
+
+class Settings(models.Model):
+    loan_period_days = models.PositiveIntegerField(default=14)
+    charge_per_day = models.DecimalField(max_digits=6, decimal_places=2, default=10.00)
+    max_outstanding_debt = models.DecimalField(max_digits=10, decimal_places=2, default=500.00)
+    
+    def __str__(self):
+        return f"Settings (Loan Period: {self.loan_period_days} days)"
+    
+    class Meta:
+        db_table = 'settings'
+        verbose_name = "Settings"
+        verbose_name_plural = "Settings"

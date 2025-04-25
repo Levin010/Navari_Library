@@ -40,7 +40,7 @@
         <a href="#" class="block px-2 py-1 hover:bg-gray-200 rounded"
           >Reports</a
         >
-        <a href="#" class="block px-2 py-1 hover:bg-gray-200 rounded"
+        <a href="{% url 'settings' %}" class="block px-2 py-1 hover:bg-gray-200 rounded"
           >Settings</a
         >
       </nav>
@@ -69,6 +69,8 @@
     <script src="{% static 'js/sidebar.js' %}"></script>
     <script src="{% static 'js/book.js' %}"></script>
     <script src="{% static 'js/member.js' %}"></script>
+    <script src="{% static 'js/transaction.js' %}"></script>
+    <script src="{% static 'js/settings.js' %}"></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>

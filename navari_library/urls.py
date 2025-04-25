@@ -21,10 +21,13 @@ from navari_library.libraryapp import views
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
+from navari_library.libraryapp.views import TransactionViewSet, SettingsViewSet
 
 router = DefaultRouter()
 router.register(r'books', views.BookViewSet)
 router.register(r'members', views.MemberViewSet)
+router.register(r'transactions', views.TransactionViewSet)
+router.register(r'settings', views.SettingsViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -46,6 +49,11 @@ urlpatterns = [
     path('api/members/<int:member_id>/update/', views.update_member, name='update_member'),
     
     path('transactions/', views.transactions_view, name='transactions'),
+    path('api/transactions/issue/', TransactionViewSet.as_view({'post': 'issue_book'})),
+    path('api/transactions/return/', TransactionViewSet.as_view({'post': 'return_book'})),
+    
+    path('settings/', views.settings_view, name='settings'),
+    path('api/settings/update_settings/', SettingsViewSet.as_view({'put': 'update_settings'})),
 ]
 
 # serve media files during development

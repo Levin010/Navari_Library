@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Book, Member
+from .models import Book, Member, Transaction, Settings
 import datetime
 
 class BookSerializer(serializers.ModelSerializer):
@@ -44,3 +44,24 @@ class MemberSerializer(serializers.ModelSerializer):
             
         instance.save()
         return instance
+    
+class TransactionSerializer(serializers.ModelSerializer):
+    book_title = serializers.ReadOnlyField(source='book.title')
+    member_name = serializers.ReadOnlyField(source='member.name')
+    
+    class Meta:
+        model = Transaction
+        fields = ['id', 'transaction_type', 'book', 'book_title', 'member', 
+                  'member_name', 'issue_date', 'due_date', 'return_date', 
+                  'fee', 'status']
+        
+    def get_member_name(self, obj):
+        """Combine first_name and last_name to create a full name"""
+        if obj.member:
+            return f"{obj.member.first_name} {obj.member.last_name}".strip()
+        return ""
+
+class SettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Settings
+        fields = ['id', 'loan_period_days', 'charge_per_day', 'max_outstanding_debt']
