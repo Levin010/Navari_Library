@@ -5,7 +5,6 @@ $(document).ready(function() {
     
     // Setup event handlers
     $('#issue-book-form').on('submit', handleIssueBook);
-    $('#return-book-form').on('submit', handleReturnBook);
 
     // Setup modal buttons
     $('#issue-book-btn').on('click', function() {
@@ -21,12 +20,32 @@ $(document).ready(function() {
         $('#issue-book-modal').removeClass('hidden').addClass('flex');
     });
     
-    $('#return-book-btn').on('click', function() {
-        // Load books and members dropdowns
-        loadIssuedBooks();
+    // Cancel return button
+    $('#cancel-return-btn').on('click', function() {
+        $('#return-confirmation-modal').addClass('hidden').removeClass('flex');
+    });
+    
+    // Complete return button
+    $('#complete-return-btn').on('click', function() {
+        const transactionId = $('#return-transaction-id').val();
         
-        // Show the return book modal
-        $('#return-book-modal').removeClass('hidden').addClass('flex');
+        // Call API to complete the return
+        $.ajax({
+            url: '/api/transactions/' + transactionId + '/return/',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                transaction_id: transactionId
+            }),
+            success: function(data) {
+                showAlert('Book returned successfully', 'success');
+                $('#return-confirmation-modal').addClass('hidden').removeClass('flex');
+                loadTransactions(); // Reload the transactions table
+            },
+            error: function(error) {
+                showAlert(error.responseJSON?.error || 'Error returning book', 'error');
+            }
+        });
     });
     
     // Close modals when clicking cancel buttons
@@ -109,7 +128,7 @@ function renderTransactionsTable(transactions) {
             <tr class="${transaction.status === 'OVERDUE' ? 'bg-red-50' : ''}">
                 <td class="px-6 py-4 whitespace-nowrap">#${transaction.id}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${transaction.book_title}</td>
-                <td class="px-6 py-4 whitespace-nowrap">${transaction.member_name}</td>
+                <td class="px-6 py-4 whitespace-nowrap">${transaction.member_name || 'Unknown'}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${formatDate(transaction.issue_date)}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${transaction.due_date ? formatDate(transaction.due_date) : '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
@@ -120,7 +139,13 @@ function renderTransactionsTable(transactions) {
                 <td class="px-6 py-4 whitespace-nowrap">KES ${transaction.fee}</td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     ${transaction.transaction_type === 'ISSUE' && !transaction.return_date ? 
-                        `<button class="return-book-btn px-3 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded" data-book="${transaction.book}" data-member="${transaction.member}">Return</button>` : ''}
+                        `<button class="return-book-btn px-3 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded" 
+                        data-id="${transaction.id}" 
+                        data-book="${transaction.book}" 
+                        data-book-title="${transaction.book_title}" 
+                        data-member="${transaction.member}" 
+                        data-member-name="${transaction.member_name || 'Unknown'}" 
+                        data-fee="${transaction.fee}">Return</button>` : ''}
                 </td>
             </tr>
         `;
@@ -129,17 +154,27 @@ function renderTransactionsTable(transactions) {
     
     // Add event handler for return buttons
     $('.return-book-btn').on('click', function() {
+        const transactionId = $(this).data('id');
         const bookId = $(this).data('book');
+        const bookTitle = $(this).data('book-title');
         const memberId = $(this).data('member');
+        const memberName = $(this).data('member-name');
+        const fee = $(this).data('fee');
         
-        // Pre-fill return form
-        $('#return-book-id').val(bookId);
-        $('#return-member-id').val(memberId);
+        // Store transaction ID in hidden field
+        $('#return-transaction-id').val(transactionId);
         
-        // Show return modal
-        $('#return-book-modal').show();
+        // Set confirmation message
+        $('#return-confirmation-message').html(
+            `Are you sure you want to return <strong>"${bookTitle}"</strong> issued to <strong>"${memberName}"</strong>? 
+            <br><br>Make sure the member has paid <strong>KES ${fee}</strong> before completing the return.`
+        );
+        
+        // Show confirmation modal
+        $('#return-confirmation-modal').removeClass('hidden').addClass('flex');
     });
 }
+
 
 
 
@@ -164,77 +199,6 @@ function handleIssueBook(e) {
         },
         error: function(error) {
             showAlert(error.responseJSON.error || 'Error issuing book', 'error');
-        }
-    });
-}
-
-
-
-// Function to load only books that are currently issued
-function loadIssuedBooks() {
-    $.ajax({
-        url: '/api/transactions/?transaction_type=ISSUE&status=COMPLETED',
-        method: 'GET',
-        success: function(data) {
-            const bookDropdown = $('#return-book-id');
-            const memberDropdown = $('#return-member-id');
-            bookDropdown.empty();
-            memberDropdown.empty();
-            
-            // Group by book and member
-            const issuedBooks = {};
-            
-            data.forEach(transaction => {
-                if (!transaction.return_date) {
-                    const key = `${transaction.book}|${transaction.member}`;
-                    issuedBooks[key] = {
-                        book_id: transaction.book,
-                        book_title: transaction.book_title,
-                        member_id: transaction.member,
-                        member_name: transaction.member_name
-                    };
-                }
-            });
-            
-            // Add options for each issued book
-            Object.values(issuedBooks).forEach(item => {
-                bookDropdown.append(`<option value="${item.book_id}" data-member="${item.member_id}">${item.book_title} (issued to ${item.member_name})</option>`);
-            });
-            
-            // Update member when book changes
-            bookDropdown.on('change', function() {
-                const selectedOption = $(this).find('option:selected');
-                const memberId = selectedOption.data('member');
-                memberDropdown.val(memberId);
-            });
-            
-            // Trigger change to set initial member
-            bookDropdown.trigger('change');
-        }
-    });
-}
-
-function handleReturnBook(e) {
-    e.preventDefault();
-    
-    const bookId = $('#return-book-id').val();
-    const memberId = $('#return-member-id').val();
-    
-    $.ajax({
-        url: '/api/transactions/return/',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            book: bookId,
-            member: memberId
-        }),
-        success: function(data) {
-            showAlert('Book returned successfully', 'success');
-            $('#return-book-modal').addClass('hidden').removeClass('flex');
-            loadTransactions();
-        },
-        error: function(error) {
-            showAlert(error.responseJSON.error || 'Error returning book', 'error');
         }
     });
 }

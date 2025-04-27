@@ -134,77 +134,50 @@ class TransactionViewSet(viewsets.ModelViewSet):
             return Response({"error": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
         except Member.DoesNotExist:
             return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
-    
-    @action(detail=False, methods=['post'])
-    def return_book(self, request):
-        book_id = request.data.get('book')
-        member_id = request.data.get('member')
         
+    @action(detail=True, methods=['post'])
+    def return_book(self, request, pk=None):
         try:
-            book = Book.objects.get(id=book_id)
-            member = Member.objects.get(id=member_id)
-            settings = Settings.objects.first()
-            
-            # Find the issue transaction for this book and member
-            issue_transaction = Transaction.objects.filter(
-                book=book,
-                member=member,
-                transaction_type='ISSUE',
-                return_date__isnull=True
-            ).first()
-            
-            if not issue_transaction:
-                return Response({"error": "No active issue found for this book and member"}, 
-                                status=status.HTTP_400_BAD_REQUEST)
-            
-            # Calculate fee
-            return_date = timezone.now()
-            days_overdue = 0
-            
-            if return_date > issue_transaction.due_date:
-                days_overdue = (return_date - issue_transaction.due_date).days
-                
-            fee = Decimal(days_overdue) * settings.charge_per_day
-            
-            # Update issue transaction
-            issue_transaction.return_date = return_date
-            issue_transaction.fee = fee
-            
-            if days_overdue > 0:
-                issue_transaction.status = 'OVERDUE'
-            else:
-                issue_transaction.status = 'COMPLETED'
-                
-            issue_transaction.save()
-            
-            # Create return transaction
+        # Get the transaction
+            transaction = Transaction.objects.get(pk=pk)
+        
+        # Check if it's an issue transaction that hasn't been returned
+            if transaction.transaction_type != 'ISSUE' or transaction.return_date:
+                return Response({"error": "Invalid transaction for return"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Update the transaction
+            transaction.return_date = timezone.now()
+            transaction.status = 'COMPLETED'
+            transaction.save()
+        
+        # Create a return transaction
             return_transaction = Transaction.objects.create(
                 transaction_type='RETURN',
-                book=book,
-                member=member,
-                issue_date=return_date,
-                fee=fee,
+                book=transaction.book,
+                member=transaction.member,
+                issue_date=timezone.now(),
                 status='COMPLETED'
-            )
-            
-            # Update book availability
+           )
+        
+        # Update book availability
+            book = transaction.book
             book.available += 1
             book.save()
-            
-            # Update member's outstanding debt
-            member.outstanding_debt -= fee
+        
+        # Reset member's outstanding debt for this book
+            member = transaction.member
+            member.outstanding_debt -= transaction.fee
+            if member.outstanding_debt < 0:
+                member.outstanding_debt = 0
             member.save()
-            
-            return Response({
-                'return_transaction': TransactionSerializer(return_transaction).data,
-                'issue_transaction': TransactionSerializer(issue_transaction).data
-            }, status=status.HTTP_201_CREATED)
-            
-        except Book.DoesNotExist:
-            return Response({"error": "Book not found"}, status=status.HTTP_404_NOT_FOUND)
-        except Member.DoesNotExist:
-            return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
-            
+        
+            return Response(TransactionSerializer(return_transaction).data, status=status.HTTP_201_CREATED)
+        
+        except Transaction.DoesNotExist:
+            return Response({"error": "Transaction not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
 def transactions_view(request):
     return render(request, 'transaction/transactions.html')
 
