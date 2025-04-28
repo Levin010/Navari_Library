@@ -51,6 +51,8 @@ urlpatterns = [
     path('transactions/', views.transactions_view, name='transactions'),
     path('api/transactions/issue/', TransactionViewSet.as_view({'post': 'issue_book'})),
     path('api/transactions/<int:pk>/return/', views.TransactionViewSet.as_view({'post': 'return_book'})),
+    path('api/transactions/get_updated_transactions/', views.TransactionViewSet.as_view({'get': 'get_updated_transactions'})),
+
     
     path('settings/', views.settings_view, name='settings'),
     path('api/settings/update_settings/', SettingsViewSet.as_view({'put': 'update_settings'})),

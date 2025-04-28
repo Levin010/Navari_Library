@@ -121,6 +121,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 member=member,
                 issue_date=issue_date,
                 due_date=due_date,
+                fee=0.00,
                 status='PENDING'
             )
             
@@ -135,6 +136,30 @@ class TransactionViewSet(viewsets.ModelViewSet):
         except Member.DoesNotExist:
             return Response({"error": "Member not found"}, status=status.HTTP_404_NOT_FOUND)
         
+    @action(detail=False, methods=['get'])
+    def get_updated_transactions(self, request):
+        """Get all transactions with updated fees and update member's outstanding debt"""
+        # First update all fees for pending issues
+        pending_issues = Transaction.objects.filter(
+            transaction_type='ISSUE',
+            status__in=['PENDING', 'OVERDUE'],
+            return_date__isnull=True
+        )
+    
+        for transaction in pending_issues:
+            transaction.update_fee()
+    
+        # Then get all transactions
+        transactions = self.get_queryset()
+        page = self.paginate_queryset(transactions)
+    
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+    
+        serializer = self.get_serializer(transactions, many=True)
+        return Response(serializer.data)
+        
     @action(detail=True, methods=['post'])
     def return_book(self, request, pk=None):
         try:
@@ -147,6 +172,12 @@ class TransactionViewSet(viewsets.ModelViewSet):
         
         # Update the transaction
             transaction.return_date = timezone.now()
+            transaction.status = 'COMPLETED'
+            transaction.save()
+            
+        # Calculate the final fee before completing the transaction
+            final_fee = transaction.calculate_fee()
+            transaction.fee = final_fee
             transaction.status = 'COMPLETED'
             transaction.save()
         
@@ -166,7 +197,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         
         # Reset member's outstanding debt for this book
             member = transaction.member
-            member.outstanding_debt -= transaction.fee
+            member.outstanding_debt -= final_fee
             if member.outstanding_debt < 0:
                 member.outstanding_debt = 0
             member.save()

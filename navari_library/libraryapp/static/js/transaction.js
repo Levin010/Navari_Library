@@ -66,7 +66,7 @@ $(document).ready(function() {
 });
 
 function loadTransactions(filters = {}) {
-    let url = '/api/transactions/';
+    let url = '/api/transactions/get_updated_transactions/';
     
     // Add any filters to the URL
     if (Object.keys(filters).length > 0) {
@@ -76,7 +76,8 @@ function loadTransactions(filters = {}) {
     $.ajax({
         url: url,
         method: 'GET',
-        success: function(data) {
+        success: function(response) {
+            const data = response.results || response;
             // Enrich the data with member name if needed
             data.forEach(transaction => {
                 if (!transaction.member_name) {
@@ -116,17 +117,20 @@ function renderTransactionsTable(transactions) {
             case 'overdue':
                 statusBadgeClass = 'bg-red-100 text-red-800';
                 break;
-            case 'issued':
+        }
+        let typeBadgeClass = '';
+        switch(transaction.transaction_type.toLowerCase()) {
+            case 'issue':
                 statusBadgeClass = 'bg-blue-100 text-blue-800';
                 break;
-            case 'returned':
+            case 'return':
                 statusBadgeClass = 'bg-green-100 text-green-800';
                 break;
         }
         
         const row = `
             <tr class="${transaction.status === 'OVERDUE' ? 'bg-red-50' : ''}">
-                <td class="px-6 py-4 whitespace-nowrap">#${transaction.id}</td>
+                <td class="px-6 py-4 whitespace-nowrap">#${transaction.id} ${transaction.transaction_type}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${transaction.book_title}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${transaction.member_name || 'Unknown'}</td>
                 <td class="px-6 py-4 whitespace-nowrap">${formatDate(transaction.issue_date)}</td>

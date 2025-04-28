@@ -48,18 +48,25 @@ class MemberSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     book_title = serializers.ReadOnlyField(source='book.title')
     member_name = serializers.ReadOnlyField(source='member.name')
+    current_fee = serializers.SerializerMethodField()
     
     class Meta:
         model = Transaction
         fields = ['id', 'transaction_type', 'book', 'book_title', 'member', 
                   'member_name', 'issue_date', 'due_date', 'return_date', 
-                  'fee', 'status']
+                  'fee', 'current_fee','status']
         
     def get_member_name(self, obj):
         """Combine first_name and last_name to create a full name"""
         if obj.member:
             return f"{obj.member.first_name} {obj.member.last_name}".strip()
         return ""
+    
+    def get_current_fee(self, obj):
+        """Get real-time fee calculation"""
+        if obj.transaction_type == 'ISSUE' and obj.status != 'COMPLETED':
+            return obj.calculate_fee()
+        return obj.fee
 
 class SettingsSerializer(serializers.ModelSerializer):
     class Meta:

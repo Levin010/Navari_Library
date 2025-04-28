@@ -77,6 +77,54 @@ class Transaction(models.Model):
         member_name = f"{self.member.first_name} {self.member.last_name}".strip() if self.member else ""
         return f"{self.transaction_type} - {self.book.title} - {self.member_name}"
     
+    def calculate_fee(self):
+        """Calculate fee based on days elapsed and settings"""
+        if self.transaction_type != 'ISSUE' or self.status == 'COMPLETED':
+            return self.fee
+        
+        settings = Settings.objects.first()
+        if not settings:
+            return self.fee
+            
+        # Calculate days elapsed since issue date
+        start_date = self.issue_date.date()
+        end_date = self.return_date.date() if self.return_date else timezone.now().date()
+        days_elapsed = (end_date - start_date).days
+        
+        # Calculate fee based on days elapsed
+        fee = days_elapsed * settings.charge_per_day
+        return fee
+    
+    def update_fee(self):
+        """Update the fee field based on calculation and update member's outstanding debt"""
+        if self.transaction_type == 'ISSUE' and self.status != 'COMPLETED':
+            # Store old fee to calculate difference
+            old_fee = self.fee
+            
+            # Calculate new fee
+            new_fee = self.calculate_fee()
+            
+            # Calculate difference to add to member's outstanding debt
+            fee_difference = new_fee - old_fee
+            
+            # Update transaction fee
+            self.fee = new_fee
+            
+            # Update status if past due date
+            if self.due_date and timezone.now() > self.due_date:
+                self.status = 'OVERDUE'
+                
+            self.save()
+            
+            # Update member's outstanding debt
+            if fee_difference > 0:
+                member = self.member
+                member.outstanding_debt += fee_difference
+                member.save()
+                
+            return fee_difference
+        return 0
+    
     class Meta:
         db_table = 'transaction'
         ordering = ['-issue_date']
