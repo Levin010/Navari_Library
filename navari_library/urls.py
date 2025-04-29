@@ -28,6 +28,7 @@ router.register(r'books', views.BookViewSet)
 router.register(r'members', views.MemberViewSet)
 router.register(r'transactions', views.TransactionViewSet)
 router.register(r'settings', views.SettingsViewSet)
+router.register(r'member-reports', views.MemberReportViewSet, basename='memberreport')
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -53,9 +54,11 @@ urlpatterns = [
     path('api/transactions/<int:pk>/return/', views.TransactionViewSet.as_view({'post': 'return_book'})),
     path('api/transactions/get_updated_transactions/', views.TransactionViewSet.as_view({'get': 'get_updated_transactions'})),
 
-    
     path('settings/', views.settings_view, name='settings'),
     path('api/settings/update_settings/', SettingsViewSet.as_view({'put': 'update_settings'})),
+    
+    path('reports/', views.reports, name='reports'),
+    path('reports/members/', views.member_reports, name='member_reports'),
 ]
 
 # serve media files during development

@@ -72,3 +72,19 @@ class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settings
         fields = ['id', 'loan_period_days', 'charge_per_day', 'max_outstanding_debt']
+        
+class MemberReportSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Member
+        fields = ['id', 'full_name', 'email', 'phone_number', 'joined_date', 
+                 'outstanding_debt', 'status']
+    
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+    
+    def get_status(self, obj):
+        return "Restricted" if obj.outstanding_debt >= 500 else "Active"
+    

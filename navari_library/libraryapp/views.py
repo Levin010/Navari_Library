@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
@@ -7,7 +7,11 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from .models import Book, Member, Transaction, Settings
-from .serializers import BookSerializer, MemberSerializer, TransactionSerializer, SettingsSerializer
+from .serializers import BookSerializer, MemberSerializer, TransactionSerializer, SettingsSerializer, MemberReportSerializer
+import io
+from fpdf import FPDF
+import datetime
+
 
 def home_view(request):
     return render(request, 'home.html')
@@ -238,3 +242,77 @@ class SettingsViewSet(viewsets.ModelViewSet):
     
 def settings_view(request):
     return render(request, 'transaction/settings.html')
+
+def reports(request):
+    return render(request, 'report/reports.html')
+
+def member_reports(request):
+    return render(request, 'report/reports_members.html')
+
+class MemberReportViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Member.objects.all()
+    serializer_class = MemberReportSerializer
+    
+    def get_queryset(self):
+        queryset = Member.objects.all()
+        status_filter = self.request.query_params.get('status', None)
+        
+        if status_filter == 'active':
+            queryset = queryset.filter(outstanding_debt__lt=500)
+        elif status_filter == 'restricted':
+            queryset = queryset.filter(outstanding_debt__gte=500)
+            
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def generate_pdf(self, request):
+        # Get filtered data
+        members = self.get_queryset()
+        
+        # Create PDF
+        pdf = FPDF()
+        pdf.add_page()
+        
+        # Set up the PDF
+        pdf.set_font('Arial', 'B', 16)
+        pdf.cell(190, 10, 'Members Report', 0, 1, 'C')
+        pdf.ln(10)
+        
+        # Add date
+        pdf.set_font('Arial', '', 10)
+        pdf.cell(190, 5, f'Generated: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
+        pdf.ln(5)
+        
+        # Table header
+        pdf.set_font('Arial', 'B', 11)
+        pdf.cell(10, 10, 'ID', 1, 0, 'C')
+        pdf.cell(50, 10, 'Name', 1, 0, 'C')
+        pdf.cell(50, 10, 'Email', 1, 0, 'C')
+        pdf.cell(30, 10, 'Joined Date', 1, 0, 'C')
+        pdf.cell(30, 10, 'Debt', 1, 0, 'C')
+        pdf.cell(20, 10, 'Status', 1, 1, 'C')
+        
+        # Table data
+        pdf.set_font('Arial', '', 10)
+        for member in members:
+            status = "Restricted" if member.outstanding_debt >= 500 else "Active"
+            
+            pdf.cell(10, 10, str(member.id), 1, 0, 'C')
+            pdf.cell(50, 10, f"{member.first_name} {member.last_name}", 1, 0, 'L')
+            pdf.cell(50, 10, member.email, 1, 0, 'L')
+            pdf.cell(30, 10, member.joined_date.strftime("%Y-%m-%d"), 1, 0, 'C')
+            pdf.cell(30, 10, f"${member.outstanding_debt}", 1, 0, 'R')
+            pdf.cell(20, 10, status, 1, 1, 'C')
+        
+        # Footer
+        pdf.ln(10)
+        pdf.set_font('Arial', 'I', 8)
+        pdf.cell(0, 10, 'Library Management System - Page ' + str(pdf.page_no()), 0, 0, 'C')
+        
+        # Create response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="members_report.pdf"'
+        pdf_output = pdf.output(dest='S').encode('latin1')
+        response.write(pdf_output)
+        
+        return response

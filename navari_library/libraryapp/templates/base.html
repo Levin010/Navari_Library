@@ -37,7 +37,8 @@
           class="block px-2 py-1 {% if request.resolver_match.url_name == 'transactions' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
           >Transactions</a
         >
-        <a href="#" class="block px-2 py-1 hover:bg-gray-200 rounded"
+        <a href="{% url 'reports' %}"
+          class="block px-2 py-1 {% if request.resolver_match.url_name == 'reports' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
           >Reports</a
         >
         <a href="{% url 'settings' %}" class="block px-2 py-1 hover:bg-gray-200 rounded"
@@ -64,13 +65,15 @@
       </main>
     </div>
 
-    <!-- Scripts -->
+    
     <script src="{% static 'js/jquery.js' %}"></script>
     <script src="{% static 'js/sidebar.js' %}"></script>
     <script src="{% static 'js/book.js' %}"></script>
     <script src="{% static 'js/member.js' %}"></script>
     <script src="{% static 'js/transaction.js' %}"></script>
     <script src="{% static 'js/settings.js' %}"></script>
+    <script src="{% static 'js/reports.js' %}"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     {% block extra_scripts %}{% endblock %}
   </body>
 </html>
