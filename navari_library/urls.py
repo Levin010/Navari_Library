@@ -29,6 +29,7 @@ router.register(r'members', views.MemberViewSet)
 router.register(r'transactions', views.TransactionViewSet)
 router.register(r'settings', views.SettingsViewSet)
 router.register(r'member-reports', views.MemberReportViewSet, basename='memberreport')
+router.register(r'book-reports', views.BookReportViewSet, basename='bookreport')
 
 urlpatterns = [
     path('api/', include(router.urls)),
@@ -59,6 +60,7 @@ urlpatterns = [
     
     path('reports/', views.reports, name='reports'),
     path('reports/members/', views.member_reports, name='member_reports'),
+    path('reports/books/', views.book_reports, name='book_reports'),
 ]
 
 # serve media files during development

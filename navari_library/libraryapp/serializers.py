@@ -88,3 +88,22 @@ class MemberReportSerializer(serializers.ModelSerializer):
     def get_status(self, obj):
         return "Restricted" if obj.outstanding_debt >= 500 else "Active"
     
+class BookReportSerializer(serializers.ModelSerializer):
+    availability_status = serializers.SerializerMethodField()
+    date_added = serializers.SerializerMethodField()
+    availability = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Book
+        fields = ['id', 'title', 'author', 'publication_year', 'publisher', 
+                 'availability', 'availability_status', 'date_added']
+    
+    def get_availability_status(self, obj):
+        return "Available" if obj.available > 0 else "Not Available"
+    
+    def get_date_added(self, obj):
+        return obj.created_at.strftime("%Y-%m-%d")
+    
+    def get_availability(self, obj):
+        return f"{obj.available}/{obj.stock}"
+    

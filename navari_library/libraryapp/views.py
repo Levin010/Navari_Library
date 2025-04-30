@@ -7,7 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from decimal import Decimal
 from .models import Book, Member, Transaction, Settings
-from .serializers import BookSerializer, MemberSerializer, TransactionSerializer, SettingsSerializer, MemberReportSerializer
+from .serializers import BookSerializer, MemberSerializer, TransactionSerializer, SettingsSerializer, MemberReportSerializer, BookReportSerializer
 import io
 from fpdf import FPDF
 import datetime
@@ -309,9 +309,102 @@ class MemberReportViewSet(viewsets.ReadOnlyModelViewSet):
         pdf.set_font('Arial', 'I', 8)
         pdf.cell(0, 10, 'Library Management System - Page ' + str(pdf.page_no()), 0, 0, 'C')
         
-        # Create response
+        
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="members_report.pdf"'
+        pdf_output = pdf.output(dest='S').encode('latin1')
+        response.write(pdf_output)
+        
+        return response
+    
+def book_reports(request):
+    return render(request, 'report/reports_books.html')
+
+class BookReportViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Book.objects.all()
+    serializer_class = BookReportSerializer
+    
+    def get_queryset(self):
+        queryset = Book.objects.all()
+        availability_filter = self.request.query_params.get('availability', None)
+        
+        if availability_filter == 'available':
+            queryset = queryset.filter(available__gt=0)
+        elif availability_filter == 'not_available':
+            queryset = queryset.filter(available=0)
+            
+        return queryset
+    
+    @action(detail=False, methods=['get'])
+    def generate_pdf(self, request):
+        # Get filtered data
+        books = self.get_queryset()
+        
+        # Create PDF
+        pdf = FPDF()
+        pdf.add_page()
+        
+        # Set up the PDF
+        pdf.set_font('Arial', 'B', 16)
+        pdf.cell(190, 10, 'Books Report', 0, 1, 'C')
+        pdf.ln(10)
+        
+        # Add date
+        pdf.set_font('Arial', '', 10)
+        pdf.cell(190, 5, f'Generated: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
+        pdf.ln(5)
+        
+        # Table header
+        pdf.set_font('Arial', 'B', 11)
+        pdf.cell(10, 10, 'ID', 1, 0, 'C')
+        pdf.cell(50, 10, 'Title', 1, 0, 'C')
+        pdf.cell(35, 10, 'Author', 1, 0, 'C')
+        pdf.cell(20, 10, 'Year', 1, 0, 'C')
+        pdf.cell(35, 10, 'Publisher', 1, 0, 'C')
+        pdf.cell(20, 10, 'Avail/Stock', 1, 0, 'C')
+        pdf.cell(20, 10, 'Status', 1, 1, 'C')
+        
+        # Table data
+        pdf.set_font('Arial', '', 10)
+        for book in books:
+            status = "Available" if book.available > 0 else "Not Available"
+            
+            pdf.cell(10, 10, str(book.id), 1, 0, 'C')
+            
+            # Handle potentially long titles
+            title_text = book.title
+            if len(title_text) > 30:
+                title_text = title_text[:27] + '...'
+            pdf.cell(50, 10, title_text, 1, 0, 'L')
+            
+            # Handle potentially long author names
+            author_text = book.author
+            if len(author_text) > 20:
+                author_text = author_text[:17] + '...'
+            pdf.cell(35, 10, author_text, 1, 0, 'L')
+            
+            # Publication year
+            year_text = str(book.publication_year) if book.publication_year else "N/A"
+            pdf.cell(20, 10, year_text, 1, 0, 'C')
+            
+            # Publisher
+            publisher_text = book.publisher if book.publisher else "N/A"
+            if len(publisher_text) > 20:
+                publisher_text = publisher_text[:17] + '...'
+            pdf.cell(35, 10, publisher_text, 1, 0, 'L')
+            
+            # Availability
+            pdf.cell(20, 10, f"{book.available}/{book.stock}", 1, 0, 'C')
+            pdf.cell(20, 10, status, 1, 1, 'C')
+        
+        # Footer
+        pdf.ln(10)
+        pdf.set_font('Arial', 'I', 8)
+        pdf.cell(0, 10, 'Library Management System - Page ' + str(pdf.page_no()), 0, 0, 'C')
+        
+        # Create response
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="books_report.pdf"'
         pdf_output = pdf.output(dest='S').encode('latin1')
         response.write(pdf_output)
         
