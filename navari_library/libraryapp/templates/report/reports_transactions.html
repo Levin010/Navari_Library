@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}Transactions Report - Library Management System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Transactions Report</h1>
+        <div class="flex space-x-4">
+            <button id="export-pdf" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Save PDF
+            </button>
+        </div>
+    </div>
+    
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+        <div class="p-4 border-b">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
+                <h2 class="text-lg font-semibold">Transactions List</h2>
+                
+                <div class="flex flex-wrap gap-2">
+                    <div class="mr-4">
+                        <span class="text-sm font-medium mr-2">Type:</span>
+                        <div class="inline-flex rounded-md shadow-sm">
+                            <button class="transaction-type-filter px-4 py-2 text-sm font-medium rounded-l-md border border-r-0 bg-blue-500 text-white" data-type="all">All</button>
+                            <button class="transaction-type-filter px-4 py-2 text-sm font-medium border border-r-0 bg-gray-200" data-type="issue">Issue</button>
+                            <button class="transaction-type-filter px-4 py-2 text-sm font-medium rounded-r-md border bg-gray-200" data-type="return">Return</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <span class="text-sm font-medium mr-2">Status:</span>
+                        <div class="inline-flex rounded-md shadow-sm">
+                            <button class="status-filter px-4 py-2 text-sm font-medium rounded-l-md border border-r-0 bg-blue-500 text-white" data-status="all">All</button>
+                            <button class="status-filter px-4 py-2 text-sm font-medium border border-r-0 bg-gray-200" data-status="pending">Pending</button>
+                            <button class="status-filter px-4 py-2 text-sm font-medium border border-r-0 bg-gray-200" data-status="completed">Completed</button>
+                            <button class="status-filter px-4 py-2 text-sm font-medium rounded-r-md border bg-gray-200" data-status="overdue">Overdue</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto shadow-md rounded-lg border border-gray-200 my-4">
+            <table id="transactions-table" class="min-w-full divide-y divide-gray-200 border border-gray-300 text-left text-sm">
+                <thead class="bg-blue-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Transaction ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Book</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Member</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Issue Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Due Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Return Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Fee</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-black uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200" id="transactions-table-body">
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

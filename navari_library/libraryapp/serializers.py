@@ -107,3 +107,35 @@ class BookReportSerializer(serializers.ModelSerializer):
     def get_availability(self, obj):
         return f"{obj.available}/{obj.stock}"
     
+class TransactionReportSerializer(serializers.ModelSerializer):
+    transaction_id = serializers.SerializerMethodField()
+    book_title = serializers.SerializerMethodField()
+    member_name = serializers.SerializerMethodField()
+    issue_date_formatted = serializers.SerializerMethodField()
+    due_date_formatted = serializers.SerializerMethodField()
+    return_date_formatted = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Transaction
+        fields = ['id', 'transaction_id', 'transaction_type', 'book_title', 'member_name', 
+                 'issue_date_formatted', 'due_date_formatted', 'return_date_formatted', 
+                 'fee', 'status']
+    
+    def get_transaction_id(self, obj):
+        return f"{obj.id}-{obj.transaction_type}"
+    
+    def get_book_title(self, obj):
+        return obj.book.title
+    
+    def get_member_name(self, obj):
+        return f"{obj.member.first_name} {obj.member.last_name}"
+    
+    def get_issue_date_formatted(self, obj):
+        return obj.issue_date.strftime("%Y-%m-%d %H:%M")
+    
+    def get_due_date_formatted(self, obj):
+        return obj.due_date.strftime("%Y-%m-%d %H:%M") if obj.due_date else "N/A"
+    
+    def get_return_date_formatted(self, obj):
+        return obj.return_date.strftime("%Y-%m-%d %H:%M") if obj.return_date else "N/A"
+    
