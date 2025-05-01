@@ -38,15 +38,17 @@ $(document).ready(function () {
             <td class="px-4 py-3">${member.joined_date}</td>
             <td class="${debtClass}">Ksh ${debt.toFixed(2)}</td>
             <td class="px-4 py-3">${statusTag}</td>
-            <td class="px-4 py-3">
-                <a href="/members/view/${
+            <td class="px-4 py-3 flex items-center space-x-2">
+                <a href="/members/view/${member.id}" 
+                  class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-md transition" 
+                  title="View ${member.first_name}">
+                  View
+                </a>
+                <button class="text-red-600 hover:text-red-800 delete-member" data-id="${
                   member.id
-                }" class="text-indigo-600 hover:text-indigo-900 mr-3" title="View ${
-            member.first_name
-          }">View</a>
-                <button class="text-red-600 hover:text-red-900 delete-member" data-id="${
-                  member.id
-                }">Delete</button>
+                }" title="Delete ${member.first_name}">
+                    <i class="fa fa-trash"></i>
+                </button>
             </td>
         </tr>
     `;
@@ -131,7 +133,6 @@ $(document).ready(function () {
         $("#input_phone_number").val(data.phone_number);
         $("#input_date_of_birth").val(data.date_of_birth);
         $("#input_postal_address").val(data.postal_address);
-        
 
         $("#editMemberModal").removeClass("hidden");
       },
@@ -164,7 +165,6 @@ $(document).ready(function () {
         $("#memberPhone").text(data.phone_number || "N/A");
         $("#memberDOB").text(data.date_of_birth || "N/A");
         $("#memberAddress").text(data.postal_address || "N/A");
-
 
         if (
           formData.get("profile_pic") &&

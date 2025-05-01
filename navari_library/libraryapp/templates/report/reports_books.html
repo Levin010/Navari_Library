@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}Books Report - Library Management System{% endblock %}
 
 {% block extra_css %}
@@ -55,3 +55,7 @@
 </div>
 {% endblock %}
 
+{% block extra_scripts %}
+<script src="{% static 'js/report_books.js' %}"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+{% endblock %}

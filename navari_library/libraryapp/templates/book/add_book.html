@@ -1,4 +1,6 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Add New Book |
+{% extends 'base.html' %} 
+{% load static %} 
+{% block title %}Add New Book |
 Library Management{% endblock %} {% block content %}
 <div class="container mx-auto px-4 py-6">
   <div class="flex justify-between items-center mb-6">
@@ -153,4 +155,9 @@ Library Management{% endblock %} {% block content %}
   </div>
 </div>
 
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script src="{% static 'js/book.js' %}"></script>
 {% endblock %}
