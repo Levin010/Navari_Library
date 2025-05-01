@@ -96,7 +96,7 @@ $(document).ready(function() {
             processData: false,  
             contentType: false,  
             success: function(response) {
-                alert('Book added successfully!');
+                showNotification('Book added successfully!', 'success');
                 window.location.href = "/books/";
             },
             error: function(xhr) {

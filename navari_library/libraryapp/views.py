@@ -113,6 +113,20 @@ class TransactionViewSet(viewsets.ModelViewSet):
             if member.outstanding_debt >= settings.max_outstanding_debt:
                 return Response({"error": f"Member has outstanding debt of {member.outstanding_debt} which exceeds limit of {settings.max_outstanding_debt}"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
+                
+            # Check if member already has this book issued and not returned
+            existing_transaction = Transaction.objects.filter(
+                book=book,
+                member=member,
+                transaction_type='ISSUE',
+                status__in=['PENDING', 'OVERDUE']
+            ).exists()
+            
+            if existing_transaction:
+                return Response(
+                    {"error": "This book is already issued to this member and has not been returned"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             # Calculate due date
             issue_date = timezone.now()

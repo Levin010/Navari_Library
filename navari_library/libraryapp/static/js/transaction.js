@@ -1,35 +1,35 @@
-// transactions.js
+
 $(document).ready(function() {
-    // Load transactions
+    
     loadTransactions();
     
-    // Setup event handlers
+    
     $('#issue-book-form').on('submit', handleIssueBook);
 
-    // Setup modal buttons
+    
     $('#issue-book-btn').on('click', function() {
-        // Clear any previous selections
+
+        $('#modal-error-container').empty();
+
         $('#issue-book-id').val('');
         $('#issue-member-id').val('');
         
-        // Reload books and members to get the latest data
         loadBooks();
         loadMembers();
         
-        // Show the issue book modal
         $('#issue-book-modal').removeClass('hidden').addClass('flex');
     });
     
-    // Cancel return button
+    
     $('#cancel-return-btn').on('click', function() {
         $('#return-confirmation-modal').addClass('hidden').removeClass('flex');
     });
     
-    // Complete return button
+    
     $('#complete-return-btn').on('click', function() {
         const transactionId = $('#return-transaction-id').val();
         
-        // Call API to complete the return
+        
         $.ajax({
             url: '/api/transactions/' + transactionId + '/return/',
             method: 'POST',
@@ -38,37 +38,38 @@ $(document).ready(function() {
                 transaction_id: transactionId
             }),
             success: function(data) {
-                showAlert('Book returned successfully', 'success');
+                showNotification('Book returned successfully', 'success');
                 $('#return-confirmation-modal').addClass('hidden').removeClass('flex');
-                loadTransactions(); // Reload the transactions table
+                loadTransactions(); 
             },
             error: function(error) {
-                showAlert(error.responseJSON?.error || 'Error returning book', 'error');
+                showNotification(error.responseJSON?.error || 'Error returning book', 'error');
             }
         });
     });
     
-    // Close modals when clicking cancel buttons
+    
     $('.modal-cancel-btn, button[onclick="$(\'#issue-book-modal\').hide()"]').on('click', function() {
+        $('#modal-error-container').empty();
         $(this).closest('.fixed').addClass('hidden').removeClass('flex');
     });
     
-    // Close modal when clicking outside (optional)
+    
     $(window).on('click', function(event) {
         if ($(event.target).hasClass('fixed')) {
             $('.fixed').addClass('hidden').removeClass('flex');
         }
     });
     
-    // Load books and members dropdowns
     loadBooks();
     loadMembers();
+
 });
 
 function loadTransactions(filters = {}) {
     let url = '/api/transactions/get_updated_transactions/';
     
-    // Add any filters to the URL
+    
     if (Object.keys(filters).length > 0) {
         url += '?' + $.param(filters);
     }
@@ -78,14 +79,14 @@ function loadTransactions(filters = {}) {
         method: 'GET',
         success: function(response) {
             const data = response.results || response;
-            // Enrich the data with member name if needed
+            
             data.forEach(transaction => {
                 if (!transaction.member_name) {
-                    // Make an additional request to get member details
+                    
                     $.ajax({
                         url: `/api/members/${transaction.member}/`,
                         method: 'GET',
-                        async: false, // Use synchronous request to ensure name is set before rendering
+                        async: false,
                         success: function(memberData) {
                             transaction.member_name = `${memberData.first_name} ${memberData.last_name}`.trim();
                         }
@@ -105,7 +106,7 @@ function renderTransactionsTable(transactions) {
     tableBody.empty();
     
     transactions.forEach(transaction => {
-        // Define status badge styling based on status
+        
         let statusBadgeClass = '';
         switch(transaction.status.toLowerCase()) {
             case 'pending':
@@ -156,7 +157,7 @@ function renderTransactionsTable(transactions) {
         tableBody.append(row);
     });
     
-    // Add event handler for return buttons
+    
     $('.return-book-btn').on('click', function() {
         const transactionId = $(this).data('id');
         const bookId = $(this).data('book');
@@ -165,25 +166,25 @@ function renderTransactionsTable(transactions) {
         const memberName = $(this).data('member-name');
         const fee = $(this).data('fee');
         
-        // Store transaction ID in hidden field
+        
         $('#return-transaction-id').val(transactionId);
         
-        // Set confirmation message
+        
         $('#return-confirmation-message').html(
             `Are you sure you want to return <strong>"${bookTitle}"</strong> issued to <strong>"${memberName}"</strong>? 
             <br><br>Make sure the member has paid <strong>KES ${fee}</strong> before completing the return.`
         );
         
-        // Show confirmation modal
+        
         $('#return-confirmation-modal').removeClass('hidden').addClass('flex');
     });
 }
 
 
-
-
 function handleIssueBook(e) {
     e.preventDefault();
+    
+    $('#modal-error-container').empty();
     
     const bookId = $('#issue-book-id').val();
     const memberId = $('#issue-member-id').val();
@@ -197,12 +198,51 @@ function handleIssueBook(e) {
             member: memberId
         }),
         success: function(data) {
-            showAlert('Book issued successfully', 'success');
             $('#issue-book-modal').addClass('hidden').removeClass('flex');
+            showNotification('Book issued successfully', 'success');
             loadTransactions();
         },
         error: function(error) {
-            showAlert(error.responseJSON.error || 'Error issuing book', 'error');
+            
+            let errorMessage = 'Error issuing book';
+            
+            if (error.responseJSON) {
+                
+                if (error.responseJSON.error) {
+                    errorMessage = error.responseJSON.error;
+                } 
+                
+                else if (error.responseJSON.detail) {
+                    errorMessage = error.responseJSON.detail;
+                }
+               
+                else if (typeof error.responseJSON === 'object') {
+                    const fieldErrors = [];
+                    
+                    Object.keys(error.responseJSON).forEach(field => {
+                        const messages = error.responseJSON[field];
+                        if (Array.isArray(messages)) {
+                            fieldErrors.push(`${field}: ${messages.join(', ')}`);
+                        } else if (typeof messages === 'string') {
+                            fieldErrors.push(`${field}: ${messages}`);
+                        }
+                    });
+                    
+                    if (fieldErrors.length > 0) {
+                        errorMessage = fieldErrors.join('<br>');
+                    }
+                }
+            } else if (error.statusText) {
+                errorMessage = `${error.status}: ${error.statusText}`;
+            }
+            
+            $('#issue-book-modal').removeClass('hidden').addClass('flex');
+           
+            $('#modal-error-container').html(
+                `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <span class="block sm:inline">${errorMessage}</span>
+                </div>`
+            );
         }
     });
 }
@@ -237,16 +277,16 @@ function loadMembers() {
             
             if (Array.isArray(data)) {
                 data.forEach(member => {
-                    // Combine first_name and last_name since there's no name field
+                    
                     const fullName = `${member.first_name || ''} ${member.last_name || ''}`.trim();
                     memberDropdowns.append(`<option value="${member.id}">${fullName}</option>`);
                 });
             } else if (typeof data === 'object' && data !== null) {
-                // Single member or different structure
+                
                 const memberArray = Array.isArray(data.results) ? data.results : [data];
                 
                 memberArray.forEach(member => {
-                    // Combine first_name and last_name since there's no name field
+                    
                     const fullName = `${member.first_name || ''} ${member.last_name || ''}`.trim();
                     memberDropdowns.append(`<option value="${member.id}">${fullName}</option>`);
                 });
@@ -261,7 +301,7 @@ function loadMembers() {
     });
 }
 
-// Helper functions
+
 function formatDate(dateString) {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -271,21 +311,23 @@ function formatDate(dateString) {
     });
 }
 
-function showAlert(message, type) {
-    let alertClass = type === 'success' ? 
-        'bg-green-100 text-green-800 border border-green-200' : 
-        'bg-red-100 text-red-800 border border-red-200';
+function showNotification(message, type) {
+    const notificationClass = type === 'success' ? 'bg-green-500' : 'bg-red-500';
     
-    const alertDiv = $('<div>')
-        .addClass(`p-3 mb-4 rounded ${alertClass}`)
-        .text(message);
+    const notification = $(`
+        <div class="fixed top-4 right-4 px-4 py-2 rounded-md text-white ${notificationClass} shadow-lg transition-opacity duration-300">
+            ${message}
+        </div>
+    `);
     
-    $('#alerts-container').append(alertDiv);
+    $('body').append(notification);
     
-    setTimeout(() => {
-        alertDiv.fadeOut(500, function() {
-            $(this).remove();
-        });
+    
+    setTimeout(function() {
+        notification.css('opacity', '0');
+        setTimeout(function() {
+            notification.remove();
+        }, 300);
     }, 3000);
 }
 
