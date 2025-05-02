@@ -13,14 +13,13 @@
 
     <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex">
-            <!-- Profile picture -->
+            
             <div class="w-1/4 pr-6">
-                <div class="bg-gray-200 h-64 w-full rounded-md flex items-center justify-center">
-                    <img src="{% if member.profile_pic %}{{ member.profile_pic.url }}{% else %}/static/images/default_avatar.jpg{% endif %}" alt="Profile Picture" class="object-cover h-full w-full rounded-md" />
+                <div class="bg-gray-200 h-64 w-full rounded-md flex items-center justify-center overflow-hidden">
+                    <img src="{% if member.profile_pic %}{{ member.profile_pic.url }}{% else %}/static/images/default_avatar.jpg{% endif %}" alt="Profile Picture" class="object-contain h-full w-full" />
                 </div>
             </div>
 
-            <!-- Member details -->
             <div class="w-3/4">
                 <h1 id="memberName" class="text-2xl font-bold mb-2">{{ member.first_name }} {{ member.last_name }}</h1>
                 <p class="text-lg mb-1 text-gray-600">{{ member.email }}</p>

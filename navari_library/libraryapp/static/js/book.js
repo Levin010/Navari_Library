@@ -1,6 +1,10 @@
 $(document).ready(function () {
   const currentYear = new Date().getFullYear();
   const startYear = 1800;
+  let currentFilter = "all";
+  let searchQuery = "";
+
+  checkForStoredNotification();
 
   const $dropdown = $("#publication_year");
 
@@ -17,6 +21,38 @@ $(document).ready(function () {
 
   loadBooks();
 
+  $("#search-input").on("keyup", function () {
+    searchQuery = $(this).val().toLowerCase();
+    loadBooks();
+  });
+
+  $("#filter-all").on("click", function () {
+    updateFilterButtons("all");
+    currentFilter = "all";
+    loadBooks();
+  });
+
+  $("#filter-available").on("click", function () {
+    updateFilterButtons("available");
+    currentFilter = "available";
+    loadBooks();
+  });
+
+  $("#filter-unavailable").on("click", function () {
+    updateFilterButtons("unavailable");
+    currentFilter = "unavailable";
+    loadBooks();
+  });
+
+  function updateFilterButtons(activeFilter) {
+    $("#filter-all, #filter-available, #filter-unavailable")
+      .removeClass("bg-blue-500 text-white")
+      .addClass("bg-gray-200 hover:bg-gray-300");
+    $(`#filter-${activeFilter}`)
+      .removeClass("bg-gray-200 hover:bg-gray-300")
+      .addClass("bg-blue-500 text-white");
+  }
+
   function loadBooks() {
     $.ajax({
       url: "/api/books/",
@@ -31,38 +67,73 @@ $(document).ready(function () {
           return;
         }
 
-        $.each(data, function (index, book) {
+        let filteredData = data.filter(function (book) {
+          if (currentFilter === "available" && book.available <= 0) {
+            return false;
+          }
+          if (currentFilter === "unavailable" && book.available > 0) {
+            return false;
+          }
+
+          if (searchQuery) {
+            const titleMatch = book.title.toLowerCase().includes(searchQuery);
+            const authorMatch = book.author.toLowerCase().includes(searchQuery);
+            return titleMatch || authorMatch;
+          }
+
+          return true;
+        });
+
+        if (filteredData.length === 0) {
+          $("#book-list").append(
+            '<tr><td colspan="6" class="px-6 py-4 text-center">No matching books found</td></tr>'
+          );
+          return;
+        }
+
+        $.each(filteredData, function (index, book) {
           let coverImg = book.cover_pic
             ? `<img src="${book.cover_pic}" alt="${book.title}" class="h-12 w-auto object-cover">`
             : '<div class="h-12 w-10 bg-gray-200 flex items-center justify-center text-gray-500">N/A</div>';
 
           let row = `
-                        <tr class="border-t">
-                            <td class="px-4 py-3">${book.title}</td>
-                            <td class="px-4 py-3">${book.author}</td>
-                            <td class="px-4 py-3">${book.publication_year}</td>
-                            <td class="px-4 py-3">${book.available}/${book.stock}</td>
-                            <td class="px-4 py-3 flex items-center space-x-2">
-                                <a href="/books/view/${book.id}" 
-                                class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-md transition" 
-                                title="View ${book.title}">
-                                View
-                                </a>
-                                <button class="text-red-600 hover:text-red-800 delete-book" data-id="${book.id}" title="Delete ${book.title}">
-                                    <i class="fa fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
+              <tr class="border-t hover:bg-gray-50">
+                  <td class="px-4 py-3">${book.title}</td>
+                  <td class="px-4 py-3">${book.author}</td>
+                  <td class="px-4 py-3">${book.publication_year}</td>
+                  <td class="px-4 py-3">${book.available}/${book.stock}</td>
+                  <td class="px-4 py-3 flex items-center space-x-2">
+                      <a href="/books/view/${book.id}" 
+                      class="bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-3 py-1 rounded-md transition" 
+                      title="View ${book.title}">
+                      View
+                      </a>
+                      <button class="text-red-600 hover:text-red-800 delete-book" 
+                                data-id="${book.id}" 
+                                data-title="${book.title}"
+                                title="Delete ${book.title}">
+                            <i class="fa fa-trash"></i>
+                      </button>
+                  </td>
+              </tr>
+            `;
 
           $("#book-list").append(row);
         });
 
+        $("#book-count").text(
+          `Showing ${filteredData.length} of ${data.length} books`
+        );
+
         $(".delete-book").click(function () {
           let bookId = $(this).data("id");
-          if (confirm("Are you sure you want to delete this book?")) {
-            deleteBook(bookId);
-          }
+          let bookTitle = $(this).data("title");
+
+          $("#deleteBookTitle").text(bookTitle);
+
+          $("#confirmDelete").data("id", bookId);
+
+          $("#deleteConfirmModal").removeClass("hidden");
         });
       },
       error: function (xhr) {
@@ -72,16 +143,33 @@ $(document).ready(function () {
     });
   }
 
+  $("#cancelDelete").click(function () {
+    $("#deleteConfirmModal").addClass("hidden");
+  });
+
+  $("#confirmDelete").click(function () {
+    let bookId = $(this).data("id");
+    deleteBook(bookId);
+    $("#deleteConfirmModal").addClass("hidden");
+  });
+
+  $("#deleteConfirmModal").click(function (e) {
+    if (e.target === this) {
+      $(this).addClass("hidden");
+    }
+  });
+
   function deleteBook(bookId) {
     $.ajax({
       url: `/api/books/${bookId}/`,
       type: "DELETE",
       success: function () {
+        showNotification("Book deleted successfully!", "success");
         loadBooks();
       },
       error: function (xhr) {
         console.error("Error deleting book:", xhr);
-        alert("Failed to delete book. Please try again later.");
+        showNotification("Failed to delete book. Please try again later.", "error");
       },
     });
   }
@@ -98,7 +186,7 @@ $(document).ready(function () {
       processData: false,
       contentType: false,
       success: function (response) {
-        showNotification("Book added successfully!", "success");
+        storeNotification("Book added successfully!", "success");
         window.location.href = "/books/";
       },
       error: function (xhr) {
@@ -201,14 +289,16 @@ $(document).ready(function () {
   });
 
   function showNotification(message, type) {
+    checkForStoredNotification();
+
     const notificationClass =
       type === "success" ? "bg-green-500" : "bg-red-500";
 
     const notification = $(`
-            <div class="fixed top-4 right-4 px-4 py-2 rounded-md text-white ${notificationClass} shadow-lg transition-opacity duration-300">
-                ${message}
-            </div>
-        `);
+      <div class="fixed top-4 right-4 px-4 py-2 rounded-md text-white ${notificationClass} shadow-lg transition-opacity duration-300 z-50">
+          ${message}
+      </div>
+    `);
 
     $("body").append(notification);
 
@@ -217,6 +307,49 @@ $(document).ready(function () {
       setTimeout(function () {
         notification.remove();
       }, 300);
-    }, 3000);
+    }, 6000);
+  }
+
+  function storeNotification(message, type) {
+    sessionStorage.setItem("notification_message", message);
+    sessionStorage.setItem("notification_type", type);
+    sessionStorage.setItem("notification_time", new Date().getTime());
+  }
+
+  function checkForStoredNotification() {
+    const message = sessionStorage.getItem("notification_message");
+    const type = sessionStorage.getItem("notification_type");
+    const time = sessionStorage.getItem("notification_time");
+
+    if (message && type && time) {
+      const currentTime = new Date().getTime();
+      const timeDiff = currentTime - parseInt(time);
+
+      if (timeDiff < 6000) {
+        const remainingTime = 6000 - timeDiff;
+
+        const notificationClass =
+          type === "success" ? "bg-green-500" : "bg-red-500";
+
+        const notification = $(`
+          <div class="fixed top-4 right-4 px-4 py-2 rounded-md text-white ${notificationClass} shadow-lg transition-opacity duration-300 z-50">
+              ${message}
+          </div>
+        `);
+
+        $("body").append(notification);
+
+        setTimeout(function () {
+          notification.css("opacity", "0");
+          setTimeout(function () {
+            notification.remove();
+          }, 300);
+        }, remainingTime);
+      }
+
+      sessionStorage.removeItem("notification_message");
+      sessionStorage.removeItem("notification_type");
+      sessionStorage.removeItem("notification_time");
+    }
   }
 });

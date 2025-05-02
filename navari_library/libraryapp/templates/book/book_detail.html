@@ -16,9 +16,10 @@
         <div class="flex">
             <!-- Book cover image -->
             <div class="w-1/4 pr-6">
-                <div class="bg-gray-200 h-64 w-full rounded-md flex items-center justify-center">
-                    <img src="{% if book.cover_pic %}{{ book.cover_pic.url }}{% else %}/static/images/default_cover.png{% endif %}" alt="Cover Image" />
-
+                <div class="bg-gray-200 h-64 w-full rounded-md flex items-center justify-center overflow-hidden">
+                    <img src="{% if book.cover_pic %}{{ book.cover_pic.url }}{% else %}/static/images/default_cover.png{% endif %}" 
+                         alt="Cover Image"
+                         class="object-contain h-full w-full" />
                 </div>
             </div>
 

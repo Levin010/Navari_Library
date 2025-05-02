@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Books - Library Management System{% endblock %}
+{% block title %}Books - Navari Library Management System{% endblock %}
 
 {% block content %}
     <div class="bg-white p-6 rounded shadow">
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-xl font-bold">Books Management</h2>
             <div class="flex gap-2">
-                <input type="text" placeholder="Search by title or author..." class="border rounded px-3 py-1 w-64" />
+                <input type="text" id="search-input" placeholder="Search by title or author..." class="border rounded px-3 py-1 w-64" />
                 <a href="{% url 'book_add' %}">
                     <button class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">+ Add Book</button>
                 </a>                  
@@ -16,9 +16,9 @@
 
         <div class="flex items-center space-x-2 mb-4">
             <span class="font-semibold">Filter by:</span>
-            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">All Books</button>
-            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Available</button>
-            <button class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Out of Stock</button>
+            <button id="filter-all" class="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600">All Books</button>
+            <button id="filter-available" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Available</button>
+            <button id="filter-unavailable" class="px-3 py-1 rounded bg-gray-200 hover:bg-gray-300">Unavailable</button>
         </div>
 
         <table class="w-full table-auto border rounded">
@@ -33,8 +33,6 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200" id="book-list">
                 
-                
-                
             </tbody>
         </table>
 
@@ -44,8 +42,29 @@
                 <button class="px-2 py-1 border rounded">2</button>
                 <button class="px-2 py-1 border rounded">3</button>
             </div>
-            <span>Showing 1-4 of 54 books</span>
+            <span id="book-count">Showing 0 of 0 books</span>
         </div>
+
+        <div id="deleteConfirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+            <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+              <div class="mb-4 text-center">
+                <svg class="h-12 w-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-800">Confirm Deletion</h3>
+                <p class="mt-2 text-gray-600">Are you sure you want to delete this book? This action cannot be undone.</p>
+                <p id="deleteBookTitle" class="mt-2 font-semibold text-gray-800"></p>
+              </div>
+              <div class="flex justify-end space-x-3">
+                <button id="cancelDelete" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition">
+                  Cancel
+                </button>
+                <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition">
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
     </div>
 {% endblock %}
 
