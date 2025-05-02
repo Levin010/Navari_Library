@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block title %}Members - Library Management System{% endblock %}
 
 {% block content %}
@@ -101,4 +103,8 @@
         </form>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/member.js' %}"></script>
 {% endblock %}

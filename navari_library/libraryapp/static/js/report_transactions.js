@@ -1,10 +1,9 @@
 $(document).ready(function() {
     
-    // Initialize DataTable
     let table = $('#transactions-table').DataTable({
         processing: true,
         serverSide: false,
-        order: [[4, 'desc']], // Sort by issue date by default (newest first)
+        order: [[4, 'desc']], 
         ajax: {
             url: '/api/transaction-reports/',
             dataSrc: ''
