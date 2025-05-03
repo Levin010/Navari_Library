@@ -437,12 +437,10 @@ class TransactionReportViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         queryset = Transaction.objects.all().order_by('-issue_date')
         
-        # Filter by transaction type
         transaction_type = self.request.query_params.get('transaction_type', None)
         if transaction_type and transaction_type.upper() in ['ISSUE', 'RETURN']:
             queryset = queryset.filter(transaction_type=transaction_type.upper())
         
-        # Filter by status
         status = self.request.query_params.get('status', None)
         if status and status.upper() in ['PENDING', 'COMPLETED', 'OVERDUE']:
             queryset = queryset.filter(status=status.upper())
@@ -451,30 +449,30 @@ class TransactionReportViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def generate_pdf(self, request):
-        # Get filtered data
+    
         transactions = self.get_queryset()
         
-        # Create PDF
         pdf = FPDF()
-        pdf.add_page('L')  # Landscape orientation
+        pdf.add_page('L')  
         
-        # Set up the PDF
+        logo_path = os.path.join('navari_library', 'libraryapp', 'static', 'images', 'logo.png')
+        if os.path.exists(logo_path):
+           
+            pdf.image(logo_path, 10, 8, 15)
+            
+        pdf.set_font('Arial', 'B', 18)
+        pdf.cell(280, 10, 'Navari Library', 0, 1, 'C')
+        
         pdf.set_font('Arial', 'B', 16)
         pdf.cell(280, 10, 'Transactions Report', 0, 1, 'C')
         pdf.ln(5)
         
-        # Add date and filters
         pdf.set_font('Arial', '', 10)
         pdf.cell(280, 5, f'Generated: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
         
-        # Add filter details
         transaction_type = self.request.query_params.get('transaction_type', 'All')
         status = self.request.query_params.get('status', 'All')
         
-        pdf.cell(280, 5, f'Filters: Type = {transaction_type}, Status = {status}', 0, 1, 'L')
-        pdf.ln(5)
-        
-        # Table header
         pdf.set_font('Arial', 'B', 9)
         pdf.cell(25, 10, 'Transaction ID', 1, 0, 'C')
         pdf.cell(60, 10, 'Book Title', 1, 0, 'C')
@@ -485,27 +483,22 @@ class TransactionReportViewSet(viewsets.ReadOnlyModelViewSet):
         pdf.cell(20, 10, 'Fee', 1, 0, 'C')
         pdf.cell(25, 10, 'Status', 1, 1, 'C')
         
-        # Table data
         pdf.set_font('Arial', '', 8)
         for transaction in transactions:
             transaction_id = f"{transaction.id}-{transaction.transaction_type}"
             
-            # Book title (truncate if too long)
             book_title = transaction.book.title
             if len(book_title) > 45:
                 book_title = book_title[:42] + '...'
                 
-            # Member name
             member_name = f"{transaction.member.first_name} {transaction.member.last_name}"
             if len(member_name) > 30:
                 member_name = member_name[:27] + '...'
             
-            # Format dates
             issue_date = transaction.issue_date.strftime("%Y-%m-%d %H:%M")
             due_date = transaction.due_date.strftime("%Y-%m-%d %H:%M") if transaction.due_date else "N/A"
             return_date = transaction.return_date.strftime("%Y-%m-%d %H:%M") if transaction.return_date else "N/A"
             
-            # Add row to table
             pdf.cell(25, 10, transaction_id, 1, 0, 'C')
             pdf.cell(60, 10, book_title, 1, 0, 'L')
             pdf.cell(40, 10, member_name, 1, 0, 'L')
@@ -515,12 +508,11 @@ class TransactionReportViewSet(viewsets.ReadOnlyModelViewSet):
             pdf.cell(20, 10, f"KES {transaction.fee}", 1, 0, 'R')
             pdf.cell(25, 10, transaction.status, 1, 1, 'C')
         
-        # Footer
         pdf.ln(10)
         pdf.set_font('Arial', 'I', 8)
-        pdf.cell(0, 10, 'Library Management System - Page ' + str(pdf.page_no()), 0, 0, 'C')
+        pdf.set_auto_page_break(True, 15)
+        pdf.cell(0, 10, 'Navari Library - Page ' + str(pdf.page_no()), 0, 0, 'C')
         
-        # Create response
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="transactions_report.pdf"'
         pdf_output = pdf.output(dest='S').encode('latin1')
