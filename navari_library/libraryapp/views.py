@@ -1,3 +1,4 @@
+import os
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets, status
@@ -268,7 +269,7 @@ class MemberReportViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = MemberReportSerializer
     
     def get_queryset(self):
-        queryset = Member.objects.all()
+        queryset = Member.objects.all().order_by('joined_date')
         status_filter = self.request.query_params.get('status', None)
         
         if status_filter == 'active':
@@ -280,24 +281,28 @@ class MemberReportViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def generate_pdf(self, request):
-        # Get filtered data
+        
         members = self.get_queryset()
         
-        # Create PDF
         pdf = FPDF()
         pdf.add_page()
         
-        # Set up the PDF
+        logo_path = os.path.join('navari_library', 'libraryapp', 'static', 'images', 'logo.png')
+        if os.path.exists(logo_path):
+           
+            pdf.image(logo_path, 10, 8, 15)
+            
+        pdf.set_font('Arial', 'B', 18)
+        pdf.cell(190, 10, 'Navari Library', 0, 1, 'C')
+        
         pdf.set_font('Arial', 'B', 16)
         pdf.cell(190, 10, 'Members Report', 0, 1, 'C')
-        pdf.ln(10)
+        pdf.ln(5)
         
-        # Add date
         pdf.set_font('Arial', '', 10)
         pdf.cell(190, 5, f'Generated: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
         pdf.ln(5)
         
-        # Table header
         pdf.set_font('Arial', 'B', 11)
         pdf.cell(10, 10, 'ID', 1, 0, 'C')
         pdf.cell(50, 10, 'Name', 1, 0, 'C')
@@ -306,7 +311,6 @@ class MemberReportViewSet(viewsets.ReadOnlyModelViewSet):
         pdf.cell(30, 10, 'Debt', 1, 0, 'C')
         pdf.cell(20, 10, 'Status', 1, 1, 'C')
         
-        # Table data
         pdf.set_font('Arial', '', 10)
         for member in members:
             status = "Restricted" if member.outstanding_debt >= 500 else "Active"
@@ -318,11 +322,10 @@ class MemberReportViewSet(viewsets.ReadOnlyModelViewSet):
             pdf.cell(30, 10, f"${member.outstanding_debt}", 1, 0, 'R')
             pdf.cell(20, 10, status, 1, 1, 'C')
         
-        # Footer
         pdf.ln(10)
         pdf.set_font('Arial', 'I', 8)
-        pdf.cell(0, 10, 'Library Management System - Page ' + str(pdf.page_no()), 0, 0, 'C')
-        
+        pdf.set_auto_page_break(True, 15)
+        pdf.cell(0, 10, 'Navari Library - Page ' + str(pdf.page_no()), 0, 0, 'C')
         
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="members_report.pdf"'
@@ -339,7 +342,7 @@ class BookReportViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BookReportSerializer
     
     def get_queryset(self):
-        queryset = Book.objects.all()
+        queryset = Book.objects.all().order_by('created_at')
         availability_filter = self.request.query_params.get('availability', None)
         
         if availability_filter == 'available':
@@ -351,24 +354,31 @@ class BookReportViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def generate_pdf(self, request):
-        # Get filtered data
+        
         books = self.get_queryset()
         
-        # Create PDF
+        
         pdf = FPDF()
         pdf.add_page()
         
-        # Set up the PDF
+        logo_path = os.path.join('navari_library', 'libraryapp', 'static', 'images', 'logo.png')
+        if os.path.exists(logo_path):
+           
+            pdf.image(logo_path, 10, 8, 15)
+            
+        pdf.set_font('Arial', 'B', 18)
+        pdf.cell(190, 10, 'Navari Library', 0, 1, 'C')
+       
         pdf.set_font('Arial', 'B', 16)
         pdf.cell(190, 10, 'Books Report', 0, 1, 'C')
         pdf.ln(10)
         
-        # Add date
+        
         pdf.set_font('Arial', '', 10)
         pdf.cell(190, 5, f'Generated: {datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}', 0, 1, 'R')
         pdf.ln(5)
         
-        # Table header
+        
         pdf.set_font('Arial', 'B', 11)
         pdf.cell(10, 10, 'ID', 1, 0, 'C')
         pdf.cell(50, 10, 'Title', 1, 0, 'C')
@@ -378,45 +388,38 @@ class BookReportViewSet(viewsets.ReadOnlyModelViewSet):
         pdf.cell(20, 10, 'Avail/Stock', 1, 0, 'C')
         pdf.cell(20, 10, 'Status', 1, 1, 'C')
         
-        # Table data
         pdf.set_font('Arial', '', 10)
         for book in books:
             status = "Available" if book.available > 0 else "Not Available"
             
             pdf.cell(10, 10, str(book.id), 1, 0, 'C')
             
-            # Handle potentially long titles
             title_text = book.title
             if len(title_text) > 30:
                 title_text = title_text[:27] + '...'
             pdf.cell(50, 10, title_text, 1, 0, 'L')
             
-            # Handle potentially long author names
             author_text = book.author
             if len(author_text) > 20:
                 author_text = author_text[:17] + '...'
             pdf.cell(35, 10, author_text, 1, 0, 'L')
             
-            # Publication year
             year_text = str(book.publication_year) if book.publication_year else "N/A"
             pdf.cell(20, 10, year_text, 1, 0, 'C')
             
-            # Publisher
             publisher_text = book.publisher if book.publisher else "N/A"
             if len(publisher_text) > 20:
                 publisher_text = publisher_text[:17] + '...'
             pdf.cell(35, 10, publisher_text, 1, 0, 'L')
             
-            # Availability
             pdf.cell(20, 10, f"{book.available}/{book.stock}", 1, 0, 'C')
             pdf.cell(20, 10, status, 1, 1, 'C')
         
-        # Footer
         pdf.ln(10)
         pdf.set_font('Arial', 'I', 8)
-        pdf.cell(0, 10, 'Library Management System - Page ' + str(pdf.page_no()), 0, 0, 'C')
+        pdf.set_auto_page_break(True, 15)
+        pdf.cell(0, 10, 'Navari Library - Page ' + str(pdf.page_no()), 0, 0, 'C')
         
-        # Create response
         response = HttpResponse(content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="books_report.pdf"'
         pdf_output = pdf.output(dest='S').encode('latin1')
