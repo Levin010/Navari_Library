@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
   </head>
   <body class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
     <div
       id="sidebar"
       class="w-64 bg-white shadow-lg transition-all duration-300 ease-in-out"
@@ -43,25 +42,25 @@
           class="block px-2 py-1 {% if request.resolver_match.url_name == 'reports' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
           >Reports</a
         >
-        <a href="{% url 'settings' %}" class="block px-2 py-1 hover:bg-gray-200 rounded"
+        <a href="{% url 'settings' %}" 
+        class="block px-2 py-1 {% if request.resolver_match.url_name == 'settings' %}bg-blue-100 text-blue-600{% else %}hover:bg-gray-200{% endif %} rounded"
           >Settings</a
         >
       </nav>
     </div>
 
-    <!-- Main content -->
     <div class="flex-1 flex flex-col">
-      <!-- Navbar -->
+      
       <header class="bg-blue-800 text-white p-4 flex items-center">
         <button id="toggleSidebar" class="text-white mr-4 focus:outline-none">
           ☰
         </button>
-        <h1 class="text-xl font-semibold ml-5 text-left">
+        <img src="/static/images/logo.png" alt="Navari Logo" class="h-8 ml-2">
+        <h1 class="text-xl font-semibold text-left ml-1">
           Navari Library Management System
         </h1>
       </header>
 
-      <!-- Content -->
       <main class="p-6 flex-1 overflow-y-auto">
         {% block content %}{% endblock %}
       </main>
