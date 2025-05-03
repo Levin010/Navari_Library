@@ -64,20 +64,20 @@ def add_book_view(request):
     return render(request, 'book/add_book.html')
 
 def book_detail_view(request, book_id):
-    """Renders the book detail template"""
+    
     book = get_object_or_404(Book, id=book_id)
     return render(request, 'book/book_detail.html', {'book': book})
 
 @api_view(['GET'])
 def book_detail_api(request, book_id):
-    """API endpoint to get book details"""
+    
     book = get_object_or_404(Book, id=book_id)
     serializer = BookSerializer(book)
     return Response(serializer.data)
 
 @api_view(['PUT'])
 def update_book(request, book_id):
-    """API endpoint to update book details"""
+    
     book = get_object_or_404(Book, id=book_id)
     serializer = BookSerializer(book, data=request.data, partial=True)
     
@@ -136,17 +136,14 @@ class TransactionViewSet(viewsets.ModelViewSet):
             member = Member.objects.get(id=member_id)
             settings = Settings.objects.first()
             
-            # Check if book is available
             if book.available <= 0:
                 return Response({"error": "Book is not available for issue"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
             
-            # Check if member has outstanding debt
             if member.outstanding_debt >= settings.max_outstanding_debt:
                 return Response({"error": f"Member has outstanding debt of {member.outstanding_debt} which exceeds limit of {settings.max_outstanding_debt}"}, 
                                 status=status.HTTP_400_BAD_REQUEST)
                 
-            # Check if member already has this book issued and not returned
             existing_transaction = Transaction.objects.filter(
                 book=book,
                 member=member,
@@ -160,11 +157,9 @@ class TransactionViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Calculate due date
             issue_date = timezone.now()
             due_date = issue_date + timedelta(days=settings.loan_period_days)
             
-            # Create transaction
             transaction = Transaction.objects.create(
                 transaction_type='ISSUE',
                 book=book,
@@ -175,7 +170,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 status='PENDING'
             )
             
-            # Update book availability
             book.available -= 1
             book.save()
             
@@ -188,8 +182,7 @@ class TransactionViewSet(viewsets.ModelViewSet):
         
     @action(detail=False, methods=['get'])
     def get_updated_transactions(self, request):
-        """Get all transactions with updated fees and update member's outstanding debt"""
-        # First update all fees for pending issues
+        
         pending_issues = Transaction.objects.filter(
             transaction_type='ISSUE',
             status__in=['PENDING', 'OVERDUE'],
@@ -199,7 +192,6 @@ class TransactionViewSet(viewsets.ModelViewSet):
         for transaction in pending_issues:
             transaction.update_fee()
     
-        # Then get all transactions
         transactions = self.get_queryset()
         page = self.paginate_queryset(transactions)
     
@@ -213,25 +205,21 @@ class TransactionViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def return_book(self, request, pk=None):
         try:
-        # Get the transaction
+        
             transaction = Transaction.objects.get(pk=pk)
         
-        # Check if it's an issue transaction that hasn't been returned
             if transaction.transaction_type != 'ISSUE' or transaction.return_date:
                 return Response({"error": "Invalid transaction for return"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Update the transaction
             transaction.return_date = timezone.now()
             transaction.status = 'COMPLETED'
             transaction.save()
             
-        # Calculate the final fee before completing the transaction
             final_fee = transaction.calculate_fee()
             transaction.fee = final_fee
             transaction.status = 'COMPLETED'
             transaction.save()
         
-        # Create a return transaction
             return_transaction = Transaction.objects.create(
                 transaction_type='RETURN',
                 book=transaction.book,
@@ -240,12 +228,10 @@ class TransactionViewSet(viewsets.ModelViewSet):
                 status='COMPLETED'
            )
         
-        # Update book availability
             book = transaction.book
             book.available += 1
             book.save()
         
-        # Reset member's outstanding debt for this book
             member = transaction.member
             member.outstanding_debt -= final_fee
             if member.outstanding_debt < 0:
