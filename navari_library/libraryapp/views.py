@@ -1,6 +1,7 @@
 import os
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
+from django.db.models import Sum
 from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
@@ -10,6 +11,7 @@ from decimal import Decimal
 from .models import Book, Member, Transaction, Settings
 from .serializers import BookSerializer, MemberSerializer, TransactionSerializer, SettingsSerializer, MemberReportSerializer, BookReportSerializer, TransactionReportSerializer
 import io
+from rest_framework.views import APIView
 from fpdf import FPDF
 import datetime
 
@@ -19,6 +21,35 @@ def home_view(request):
 
 def dashboard_view(request):
     return render(request, 'dashboard.html')
+
+class DashboardStatsAPIView(APIView):
+    
+    def get(self, request):
+        
+        total_books = Book.objects.count()
+        
+        books_borrowed = Transaction.objects.filter(
+            transaction_type='Issue', 
+            status='Pending'
+        ).count()
+        
+        books_overdue = Transaction.objects.filter(
+            transaction_type='Issue', 
+            status='Overdue'
+        ).count()
+        
+        total_debt = Member.objects.aggregate(
+            total_debt=Sum('outstanding_debt')
+        )['total_debt'] or 0  
+        
+        stats = {
+            'total_books': total_books,
+            'books_borrowed': books_borrowed,
+            'books_overdue': books_overdue,
+            'total_debt': total_debt
+        }
+        
+        return Response(stats, status=status.HTTP_200_OK)
 
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all().order_by('-created_at')

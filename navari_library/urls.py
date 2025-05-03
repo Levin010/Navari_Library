@@ -21,7 +21,7 @@ from navari_library.libraryapp import views
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
-from navari_library.libraryapp.views import TransactionViewSet, SettingsViewSet
+from navari_library.libraryapp.views import TransactionViewSet, SettingsViewSet, DashboardStatsAPIView
 
 router = DefaultRouter()
 router.register(r'books', views.BookViewSet)
@@ -38,6 +38,7 @@ urlpatterns = [
     path('', views.home_view, name='home'),
     
     path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('api/dashboard-stats/', DashboardStatsAPIView.as_view(), name='dashboard-stats'),
     
     path('books/', views.books_view, name='books'),
     path('books/add/', views.add_book_view, name='book_add'),

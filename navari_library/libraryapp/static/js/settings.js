@@ -1,8 +1,6 @@
 $(document).ready(function() {
-    // Load settings
     loadSettings();
     
-    // Setup form submission
     $('#settings-form').on('submit', saveSettings);
 });
 
