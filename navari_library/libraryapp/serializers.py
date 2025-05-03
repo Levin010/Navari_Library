@@ -13,12 +13,11 @@ class BookSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def update(self, instance, validated_data):
-        # Handle file upload separately
+        
         cover_pic = validated_data.pop('cover_pic', None)
         if cover_pic:
             instance.cover_pic = cover_pic
             
-        # Update all other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
             
@@ -33,12 +32,11 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
     def update(self, instance, validated_data):
-        # Handle file upload separately
+        
         profile_pic = validated_data.pop('profile_pic', None)
         if profile_pic:
             instance.profile_pic = profile_pic
             
-        # Update all other fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
             
