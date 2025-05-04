@@ -82,17 +82,12 @@ WSGI_APPLICATION = "navari_library.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'levdev$default'),
-        'USER': os.environ.get('DB_USER', 'levdev'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'omweezy10'),
-        'HOST': os.environ.get('DB_HOST', 'levdev.mysql.pythonanywhere-services.com'),
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'NAME': 'levdev$default',
+        'USER': 'levdev',
+        'PASSWORD': 'omweezy10',
+        'HOST': 'levdev.mysql.pythonanywhere-services.com',
     }
 }
-
 
 
 # Password validation
