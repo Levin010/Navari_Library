@@ -24,9 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-&7!qnuv)aolo4jbsty(%_+3i=anl@311-^byav#ybakej&(6c)"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'levdev.pythonanywhere.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -76,18 +80,19 @@ WSGI_APPLICATION = "navari_library.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
+    'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'navari_library',
-        'USER': 'root',
-        'PASSWORD': 'omweezy10',
-        'HOST': 'localhost',
+        'NAME': os.environ.get('DB_NAME', 'levdev$default'),
+        'USER': os.environ.get('DB_USER', 'levdev'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'omweezy10'),
+        'HOST': os.environ.get('DB_HOST', 'levdev.mysql.pythonanywhere-services.com'),
         'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }
+
 
 
 # Password validation
@@ -125,7 +130,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'navari_library', 'libraryapp', 'static'),
 ]
