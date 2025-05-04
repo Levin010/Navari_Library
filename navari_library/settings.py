@@ -20,11 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&7!qnuv)aolo4jbsty(%_+3i=anl@311-^byav#ybakej&(6c)"
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'levdev.pythonanywhere.com',
@@ -82,12 +79,13 @@ WSGI_APPLICATION = "navari_library.wsgi.application"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'levdev$default',
-        'USER': 'levdev',
-        'PASSWORD': 'omweezy10',
-        'HOST': 'levdev.mysql.pythonanywhere-services.com',
+        'NAME': os.environ.get('MYSQL_DATABASE_NAME', 'levdev$default'),
+        'USER': os.environ.get('MYSQL_DATABASE_USER', 'levdev'),
+        'PASSWORD': os.environ.get('MYSQL_DATABASE_PASSWORD', 'your-db-password'),
+        'HOST': os.environ.get('MYSQL_DATABASE_HOST', 'levdev.mysql.pythonanywhere-services.com'),
     }
 }
+
 
 
 # Password validation
