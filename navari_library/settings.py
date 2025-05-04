@@ -20,13 +20,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-&7!qnuv)aolo4jbsty(%_+3i=anl@311-^byav#ybakej&(6c)"
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'fallback-secret-key')
+DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'levdev.pythonanywhere.com',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -76,18 +77,15 @@ WSGI_APPLICATION = "navari_library.wsgi.application"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": {
+    'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'navari_library',
-        'USER': 'root',
-        'PASSWORD': 'omweezy10',
-        'HOST': 'localhost',
-        'PORT': '3306',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+        'NAME': os.environ.get('MYSQL_DATABASE_NAME', 'levdev$default'),
+        'USER': os.environ.get('MYSQL_DATABASE_USER', 'levdev'),
+        'PASSWORD': os.environ.get('MYSQL_DATABASE_PASSWORD', 'your-db-password'),
+        'HOST': os.environ.get('MYSQL_DATABASE_HOST', 'levdev.mysql.pythonanywhere-services.com'),
     }
 }
+
 
 
 # Password validation
@@ -125,7 +123,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'navari_library', 'libraryapp', 'static'),
 ]
